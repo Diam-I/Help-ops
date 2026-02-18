@@ -41,6 +41,16 @@ Pour que le projet fonctionne, il est impératif de respecter l'ordre suivant :
 
 - **La Sérialisation** : La classe `Incident` est sérialisable pour transiter sur le réseau.
 
+
+
+## Structure des fichiers et conventions
+
+Vous remarquerez que les chemins de fichiers sont longs (ex: `...\src\main\java\ho\auth\...`). Voici pourquoi :
+
+1. **Standard Maven (`src/main/java`)** : C'est la structure universelle imposée par Maven. Elle permet de séparer proprement le code source (`java`) des fichiers de configuration (`resources`) et des tests.
+
+2. **Gestion des Packages (`ho.auth`)** : En Java, le nom du package doit correspondre exactement à l'arborescence des dossiers
+
 ---
 
 ### Résumé :

@@ -1,4 +1,4 @@
-package fr.m1rt.helpops.modele;
+package ho.modele;
 
 import java.io.Serializable;
 

@@ -1,7 +1,9 @@
-package fr.m1rt.helpops.auth;
+package ho.serveur;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+
+import ho.auth.IAuthService;
 
 /**
  * Lanceur RMI : crée le registre et enregistre l'objet distant.

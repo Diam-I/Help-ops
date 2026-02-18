@@ -1,4 +1,4 @@
-package fr.m1rt.helpops.auth;
+package ho.auth;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;

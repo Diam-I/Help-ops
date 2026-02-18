@@ -1,7 +1,9 @@
-package fr.m1rt.helpops.auth;
+package ho.serveur;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+
+import ho.auth.IAuthService;
 
 /**
  * Implantation du service. Définit le "COMMENT" sur le serveur.

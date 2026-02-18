@@ -1,8 +1,9 @@
-package fr.m1rt.helpops.client;
+package ho.client;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import fr.m1rt.helpops.auth.IAuthService; // Importé depuis ho-commun
+
+import ho.auth.IAuthService;
 
 public class ClientLanceur {
     public static void main(String[] args) {
