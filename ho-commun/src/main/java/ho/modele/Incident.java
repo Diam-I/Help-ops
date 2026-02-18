@@ -3,21 +3,30 @@ package ho.modele;
 import java.io.Serializable;
 
 /**
- * L'objet Incident doit implémenter Serializable pour être converti en flux 
- * d'octets et circuler sur le réseau entre le serveur de tickets et le client.
+ * Représente un incident métier échangé entre client et serveurs.
+ *
+ * <p>La classe implémente {@link Serializable} pour permettre le transport
+ * des instances via RMI.</p>
  */
 public class Incident implements Serializable {
-    private static final long serialVersionUID = 1L; // Garantit la compatibilité lors de la désérialisation
+    private static final long serialVersionUID = 1L;
     
     public String id;
     public String titre;
     public String description;
     public String etat;
 
+    /**
+     * Construit un incident avec l'état initial {@code OPEN}.
+     *
+     * @param id identifiant unique de l'incident
+     * @param titre titre court de l'incident
+     * @param description description détaillée de l'incident
+     */
     public Incident(String id, String titre, String description) {
         this.id = id;
         this.titre = titre;
         this.description = description;
-        this.etat = "OPEN"; // État initial imposé par le cahier des charges
+        this.etat = "OPEN";
     }
 }

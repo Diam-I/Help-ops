@@ -6,18 +6,21 @@ import java.rmi.registry.Registry;
 import ho.auth.IAuthService;
 
 /**
- * Lanceur RMI : crée le registre et enregistre l'objet distant.
+ * Point d'entrée du serveur d'authentification RMI.
  */
 public class ServeurAuthLanceur {
+    /**
+     * Démarre le registre RMI et publie le service d'authentification.
+     *
+     * @param args arguments de ligne de commande (non utilisés)
+     */
     public static void main(String[] args) {
         try {
-            // Création de l'annuaire (Registry) sur le port 1099
             Registry reg = LocateRegistry.createRegistry(1099);
-            
-            // Instanciation et publication du service
+
             IAuthService auth = new AuthServiceImpl();
             reg.rebind("AuthService", auth);
-            
+
             System.out.println(">>> Serveur d'Authentification démarré.");
         } catch (Exception e) {
             e.printStackTrace();
