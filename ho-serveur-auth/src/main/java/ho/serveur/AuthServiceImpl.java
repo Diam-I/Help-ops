@@ -29,8 +29,9 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
      */
     @Override
     public String login(String login, String password) throws RemoteException {
+        // a modifier quand on aura les comptes //
         if ("admin".equals(login) && "123".equals(password)) {
-            return "TOKEN-SECRET-" + login.toUpperCase();
+            return "Token -" + login.toUpperCase();
         }
         return null;
     }

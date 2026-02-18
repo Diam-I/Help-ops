@@ -1,0 +1,11 @@
+[
+  {
+    "idUnique": "INC-2024-001",
+    "titre": "Écran noir",
+    "categorie": "Matériel",
+    "description": "L'écran de la salle 202 ne s'allume plus.",
+    "etat": "OPEN",
+    "dateCreation": "2024-05-20T10:30:00Z",
+    "idCreateur": "U001"
+  }
+]

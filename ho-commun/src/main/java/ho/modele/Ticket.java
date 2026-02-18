@@ -8,7 +8,7 @@ import java.io.Serializable;
  * <p>La classe implémente {@link Serializable} pour permettre le transport
  * des instances via RMI.</p>
  */
-public class Incident implements Serializable {
+public class Ticket implements Serializable {
     private static final long serialVersionUID = 1L;
     
     public String id;
@@ -23,7 +23,7 @@ public class Incident implements Serializable {
      * @param titre titre court de l'incident
      * @param description description détaillée de l'incident
      */
-    public Incident(String id, String titre, String description) {
+    public Ticket(String id, String titre, String description) {
         this.id = id;
         this.titre = titre;
         this.description = description;
