@@ -1,8 +1,9 @@
 package ho.serveur;
-
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-
+import java.util.UUID;
 import ho.auth.IAuthService;
 
 /**
@@ -29,10 +30,30 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
      */
     @Override
     public String login(String login, String password) throws RemoteException {
-        // a modifier quand on aura les comptes //
-        if ("admin".equals(login) && "123".equals(password)) {
-            return "Token -" + login.toUpperCase();
+        /// erreur ici, le fichier json n'est pas trouvé /// 
+        try {
+            InputStream is = getClass().getClassLoader()
+                    .getResourceAsStream("ho/bd/utilisateurs.json");
+
+            if (is == null) {
+                System.out.println("Fichier utilisateurs.json non trouvée");
+                return null;
+            }
+
+            String contenu = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+
+            if (contenu.contains("\"login\": \"" + login + "\"") &&
+                contenu.contains("\"password\": \"" + password + "\"")) {
+
+                return "TOKEN-" + UUID.randomUUID();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
+
+    
+
 }

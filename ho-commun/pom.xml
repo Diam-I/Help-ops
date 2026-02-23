@@ -11,4 +11,12 @@
     </parent>
 
     <artifactId>ho-commun</artifactId>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/ressources</directory>
+            </resource>
+        </resources>
+    </build>
 </project>

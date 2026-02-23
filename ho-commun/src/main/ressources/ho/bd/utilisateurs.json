@@ -2,7 +2,7 @@
   {
     "idUtilisateur": "U001",
     "login": "jdupont",
-    "password": "hashed_password_123",
+    "password": "12345",
     "nom": "Jean Dupont",
     "pole": {
       "idPole": "P01",
@@ -12,7 +12,7 @@
   {
     "idUtilisateur": "U002",
     "login": "msmith",
-    "password": "hashed_password_456",
+    "password": "67890",
     "nom": "Marie Smith",
     "pole": {
       "idPole": "P02",
