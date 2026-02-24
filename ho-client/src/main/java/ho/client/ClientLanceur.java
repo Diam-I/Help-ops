@@ -96,7 +96,35 @@ public class ClientLanceur {
                                 System.out.println("Vos tickets :");
                                 for (int i = 0; i < tickets.size(); i++) {
                                     Ticket t = tickets.get(i);
-                                    System.out.println("- " + t.getId() + " " + t.getTitre() + " [" + t.getEtat() + "] : " + t.getDescription());
+                                    System.out.println((i + 1) + ". " + t.getId() + " " + t.getTitre() + " [" + t.getEtat() + "]");
+                                }
+
+                                while (true) {
+                                    System.out.print("Quel ticket afficher en détail ? (numéro, 0 pour annuler) : ");
+                                    String saisie = scanner.nextLine().trim();
+
+                                    if ("0".equals(saisie)) {
+                                        break;
+                                    }
+
+                                    try {
+                                        int index = Integer.parseInt(saisie) - 1;
+                                        if (index >= 0 && index < tickets.size()) {
+                                            Ticket selection = tickets.get(index);
+                                            System.out.println("\n--- Détail du ticket ---");
+                                            System.out.println("ID : " + selection.getId());
+                                            System.out.println("Titre : " + selection.getTitre());
+                                            System.out.println("Catégorie : " + selection.getCategorie());
+                                            System.out.println("État : " + selection.getEtat());
+                                            System.out.println("Date de création : " + selection.getDateCreation());
+                                            System.out.println("ID créateur : " + selection.getIdCreateur());
+                                            System.out.println("Description : " + selection.getDescription());
+                                            break;
+                                        }
+                                        System.out.println("Numéro invalide, veuillez réessayer.");
+                                    } catch (NumberFormatException e) {
+                                        System.out.println("Veuillez saisir un numéro valide.");
+                                    }
                                 }
                             }
                             break;
