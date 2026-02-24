@@ -5,6 +5,11 @@ import java.rmi.registry.Registry;
 
 import ho.tickets.ITicketsService;
 
+/**
+ * Point d'entrée du serveur de tickets.
+ *
+ * <p>Publie le service `TicketsService` dans le registre RMI.</p>
+ */
 public class ServeurTicketsLanceur {
     /**
      * Démarre le registre RMI et publie le service de gestion des tickets.
@@ -15,7 +20,7 @@ public class ServeurTicketsLanceur {
         try {
             System.setProperty("java.rmi.server.hostname", "localhost");
 
-            // recuperer le registre RMI ou le creer s'il n'existe pas
+            // Récupère le registre RMI, ou le crée s'il n'existe pas.
             Registry reg;
             try {
                 reg = LocateRegistry.getRegistry(1099);

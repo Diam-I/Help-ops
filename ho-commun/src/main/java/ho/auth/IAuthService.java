@@ -5,6 +5,8 @@ import java.rmi.RemoteException;
 
 /**
  * Contrat du service d'authentification exposé via RMI.
+ *
+ * <p>Définit les opérations d'authentification partagées entre client et serveurs.</p>
  */
 public interface IAuthService extends Remote {
     /**
@@ -18,7 +20,7 @@ public interface IAuthService extends Remote {
     String login(String login, String password) throws RemoteException;
 
     /**
-     * Verifie si un jeton est toujours valide.
+        * Vérifie si un jeton est toujours valide.
      *
      * @param token jeton de session
      * @return {@code true} si le jeton est valide, sinon {@code false}
@@ -27,7 +29,7 @@ public interface IAuthService extends Remote {
     boolean verifierToken(String token) throws RemoteException;
 
     /**
-     * Retourne le login associe au jeton si connu.
+        * Retourne le login associé au jeton si connu.
      *
      * @param token jeton de session
      * @return login utilisateur ou {@code null} si inconnu

@@ -7,6 +7,8 @@ import ho.auth.IAuthService;
 
 /**
  * Point d'entrée du serveur d'authentification RMI.
+ *
+ * <p>Publie le service `AuthService` dans le registre RMI.</p>
  */
 public class ServeurAuthLanceur {
     /**
@@ -18,7 +20,7 @@ public class ServeurAuthLanceur {
         try {
             System.setProperty("java.rmi.server.hostname", "localhost");
 
-            // recuperer le registre RMI ou le creer s'il n'existe pas
+            // Récupère le registre RMI, ou le crée s'il n'existe pas.
             Registry reg;
             try {
                 reg = LocateRegistry.getRegistry(1099);

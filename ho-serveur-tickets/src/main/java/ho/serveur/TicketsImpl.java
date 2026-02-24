@@ -20,6 +20,11 @@ import ho.auth.IAuthService;
 import ho.modele.Ticket;
 import ho.tickets.ITicketsService;
 
+/**
+ * Implémentation du service de tickets exposé via RMI.
+ *
+ * <p>Gère la création, la lecture et la persistance des tickets.</p>
+ */
 public class TicketsImpl extends UnicastRemoteObject implements ITicketsService {
 
     private static final DateTimeFormatter LOG_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
@@ -28,6 +33,9 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         super();
     }
 
+    /**
+        * Récupère un ticket par son identifiant.
+     */
     @Override
     public Ticket getTicket(String token, String id) throws RemoteException {
         String login = recupererLogin(token);
@@ -47,6 +55,9 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         return null;
     }
 
+    /**
+        * Affiche un ticket dans la console serveur (utile en debug/demo).
+     */
     public void afficherTicket(Ticket ticket) {
         System.out.println("ID: " + ticket.getId());
         System.out.println("Titre: " + ticket.getTitre());
@@ -74,6 +85,9 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         return ticket;
     }
 
+    /**
+        * Liste les tickets après validation du token.
+     */
     public List<Ticket> listerTickets(String token) throws RemoteException {
         String login = recupererLogin(token);
         log(login + " - listerTickets");
@@ -86,6 +100,9 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         return chargerTickets();
     }
 
+    /**
+        * Délègue la validation du token au serveur d'authentification.
+     */
     private boolean tokenValide(String token) throws RemoteException {
         if (token == null) {
             return false;
@@ -108,11 +125,17 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         }
     }
 
+    /**
+        * Récupère la référence distante vers le service d'authentification.
+     */
     private IAuthService connecterAuthService() throws Exception {
         Registry registry = LocateRegistry.getRegistry("localhost", 1099);
         return (IAuthService) registry.lookup("AuthService");
     }
 
+    /**
+        * Normalise la catégorie pour garantir les valeurs métier attendues.
+     */
     private String normaliserCategorie(String categorie) {
         if (categorie == null) {
             return "incident";
@@ -126,6 +149,9 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         return "incident";
     }
 
+    /**
+        * Charge les tickets depuis le fichier JSON de persistance.
+     */
     private List<Ticket> chargerTickets() throws RemoteException {
         try {
             String contenu = lireContenuTicketsJson();
@@ -162,6 +188,9 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         }
     }
 
+    /**
+        * Ajoute un ticket dans le JSON en conservant les tickets existants.
+     */
     private void sauvegarderTicket(Ticket nouveauTicket) throws RemoteException {
         try {
             Path chemin = trouverCheminTicketsJson();
@@ -199,6 +228,9 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         }
     }
 
+    /**
+        * Lit le contenu brut du fichier tickets.json.
+     */
     private String lireContenuTicketsJson() throws Exception {
         Path chemin = trouverCheminTicketsJson();
         if (Files.exists(chemin)) {
@@ -214,6 +246,9 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         return "[]";
     }
 
+    /**
+        * Génère un identifiant incrémental sur 10 chiffres.
+     */
     private String genererIdTicket() throws RemoteException {
         try {
             String contenu = lireContenuTicketsJson();
@@ -242,11 +277,17 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         }
     }
 
+    /**
+        * Écrit un log horodaté pour suivre les actions métier.
+     */
     private void log(String message) {
         String date = LocalDateTime.now().format(LOG_FORMAT);
         System.out.println("[" + date + "] " + message);
     }
 
+    /**
+        * Récupère le login associé au token pour améliorer la lisibilité des logs.
+     */
     private String recupererLogin(String token) {
         if (token == null) {
             return "inconnu";
@@ -260,6 +301,9 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         }
     }
 
+    /**
+        * Cherche le chemin de tickets.json selon le dossier de lancement.
+     */
     private Path trouverCheminTicketsJson() {
         Path chemin1 = Path.of("ho-commun", "src", "main", "ressources", "ho", "bd", "tickets.json");
         Path chemin2 = Path.of("..", "ho-commun", "src", "main", "ressources", "ho", "bd", "tickets.json");
@@ -274,6 +318,9 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         return chemin1;
     }
 
+    /**
+        * Extrait chaque objet JSON d'un tableau de tickets.
+     */
     private List<String> extraireObjetsJson(String json) {
         List<String> objets = new ArrayList<>();
         if (json == null || json.isBlank()) {
@@ -302,6 +349,9 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         return objets;
     }
 
+    /**
+        * Lit une valeur de champ dans un objet JSON (lecture simple par regex).
+     */
     private String lireChamp(String objetJson, String champ) {
         Pattern pattern = Pattern.compile("\\\"" + Pattern.quote(champ) + "\\\"\\s*:\\s*\\\"([^\\\"]*)\\\"");
         Matcher matcher = pattern.matcher(objetJson);
@@ -311,6 +361,9 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         return "";
     }
 
+    /**
+        * Sérialise un ticket au format JSON.
+     */
     private String ticketVersJson(Ticket ticket) {
         return "{" +
                 "\"id\": \"" + echapper(ticket.getId()) + "\", " +
@@ -323,6 +376,9 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                 "}";
     }
 
+    /**
+        * Échappe les caractères sensibles avant écriture JSON.
+     */
     private String echapper(String valeur) {
         if (valeur == null) {
             return "";

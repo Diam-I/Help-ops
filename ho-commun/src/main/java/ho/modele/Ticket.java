@@ -5,10 +5,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Représente un incident métier échangé entre client et serveurs.
+ * Représente un ticket métier échangé entre client et serveurs.
  *
- * <p>La classe implémente {@link Serializable} pour permettre le transport
- * des instances via RMI.</p>
+ * <p>Objet de transport partagé entre les modules via RMI.</p>
  */
 public class Ticket implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -22,13 +21,12 @@ public class Ticket implements Serializable {
     private String idCreateur ; 
 
     /**
-     * Construit un incident avec l'état initial {@code OPEN}.
+        * Construit un ticket avec l'état initial {@code OPEN}.
      *
-     * @param id identifiant unique de l'incident
-     * @param titre titre court de l'incident
-     * @param categorie catégorie de l'incident
-     * @param description description détaillée de l'incident
-     * @param dateCreation date de création du ticket
+      * @param id identifiant unique du ticket
+      * @param titre titre court du ticket
+      * @param categorie catégorie métier du ticket
+      * @param description description détaillée du ticket
      * @param idCreateur identifiant du créateur du ticket
      */
     public Ticket(String id, String titre, String categorie, String description, String idCreateur) {

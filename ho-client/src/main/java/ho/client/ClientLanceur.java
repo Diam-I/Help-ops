@@ -12,13 +12,13 @@ import ho.tickets.ITicketsService;
 /**
  * Point d'entrée du client HELP'OPS.
  *
- * Le client se connecte au registre RMI, récupère le service
- * d'authentification puis exécute une tentative de connexion utilisateur.</p>
+ * <p>Lance le menu console et appelle les services RMI
+ * d'authentification et de tickets selon les actions de l'utilisateur.</p>
  */
 public class ClientLanceur {
 
     /**
-     * Lance le client d'authentification puis affiche un menu de gestion des tickets après une connexion réussie
+        * Démarre le client puis affiche le menu principal après authentification.
      *
      * @param args arguments de ligne de commande (non utilisés)
      */
@@ -115,16 +115,25 @@ public class ClientLanceur {
         }
     }
 
+    /**
+        * Récupère la référence distante du service d'authentification.
+     */
     private static IAuthService connecterAuthService() throws Exception {
         Registry registry = LocateRegistry.getRegistry("localhost", 1099);
         return (IAuthService) registry.lookup("AuthService");
     }
 
+    /**
+        * Récupère la référence distante du service de tickets.
+     */
     private static ITicketsService connecterTicketsService() throws Exception {
         Registry registry = LocateRegistry.getRegistry("localhost", 1099);
         return (ITicketsService) registry.lookup("TicketsService");
     }
 
+    /**
+        * Demande à l'utilisateur s'il souhaite retenter l'opération.
+     */
     private static boolean demanderReessai(Scanner scanner) {
         System.out.println("1. Réessayer");
         System.out.println("2. Quitter");
@@ -133,6 +142,9 @@ public class ClientLanceur {
         return "1".equals(choix);
     }
 
+    /**
+        * Affiche le menu de démarrage du client.
+     */
     private static boolean demanderConnexion(Scanner scanner) {
         while (true) {
             System.out.println("1. Se connecter");
@@ -151,6 +163,9 @@ public class ClientLanceur {
         }
     }
 
+    /**
+        * Force le choix d'une catégorie métier valide.
+     */
     private static String demanderCategorie(Scanner scanner) {
         while (true) {
             System.out.println("Categorie du ticket :");

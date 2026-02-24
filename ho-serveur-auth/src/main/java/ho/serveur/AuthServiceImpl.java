@@ -17,15 +17,19 @@ import ho.auth.IAuthService;
 
 /**
  * Implémentation serveur du contrat {@link IAuthService}.
+ *
+ * <p>Gère l'authentification et la validation centralisée des tokens.</p>
  */
 public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService {
 
+    // Tokens actifs conservés en mémoire pour valider les sessions.
     private final Set<String> tokensActifs = Collections.synchronizedSet(new HashSet<>());
+    // Association token -> login pour tracer les actions.
     private final Map<String, String> tokenParLogin = new ConcurrentHashMap<>();
     private static final DateTimeFormatter LOG_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     /**
-     * Crée et exporte le service d'authentification RMI.
+        * Crée et exporte le service d'authentification RMI.
      *
      * @throws RemoteException en cas d'échec de l'export RMI
      */
@@ -34,7 +38,7 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
     }
 
     /**
-     * Vérifie les identifiants et retourne un jeton de session si valides.
+        * Vérifie les identifiants et retourne un jeton de session si valides.
      *
      * @param login identifiant fourni par le client
      * @param password mot de passe fourni par le client
@@ -98,6 +102,13 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
         return null;
     }
 
+    /**
+        * Valide un token de session.
+     *
+     * @param token token reçu d'un client ou d'un autre service
+     * @return {@code true} si le token est connu et actif, sinon {@code false}
+     * @throws RemoteException en cas d'erreur RMI
+     */
     @Override
     public boolean verifierToken(String token) throws RemoteException {
         if (token == null) {
@@ -113,6 +124,13 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
         return valide;
     }
 
+    /**
+        * Retourne le login associé à un token.
+     *
+     * @param token token de session
+     * @return login associé, ou {@code null} si introuvable
+     * @throws RemoteException en cas d'erreur RMI
+     */
     @Override
     public String getLoginByToken(String token) throws RemoteException {
         if (token == null) {
@@ -121,11 +139,13 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
         return tokenParLogin.get(token);
     }
 
+    /**
+        * Écrit un log horodaté pour suivre les actions.
+     *
+     * @param message message à afficher
+     */
     private void log(String message) {
         String date = LocalDateTime.now().format(LOG_FORMAT);
         System.out.println("[" + date + "] " + message);
     }
-
-    
-
 }
