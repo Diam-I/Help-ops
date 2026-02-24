@@ -16,4 +16,22 @@ public interface IAuthService extends Remote {
      * @throws RemoteException en cas d'erreur de communication RMI
      */
     String login(String login, String password) throws RemoteException;
+
+    /**
+     * Verifie si un jeton est toujours valide.
+     *
+     * @param token jeton de session
+     * @return {@code true} si le jeton est valide, sinon {@code false}
+     * @throws RemoteException en cas d'erreur de communication RMI
+     */
+    boolean verifierToken(String token) throws RemoteException;
+
+    /**
+     * Retourne le login associe au jeton si connu.
+     *
+     * @param token jeton de session
+     * @return login utilisateur ou {@code null} si inconnu
+     * @throws RemoteException en cas d'erreur de communication RMI
+     */
+    String getLoginByToken(String token) throws RemoteException;
 }

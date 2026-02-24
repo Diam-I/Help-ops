@@ -16,6 +16,8 @@ public class ServeurAuthLanceur {
      */
     public static void main(String[] args) {
         try {
+            System.setProperty("java.rmi.server.hostname", "localhost");
+
             // recuperer le registre RMI ou le creer s'il n'existe pas
             Registry reg;
             try {

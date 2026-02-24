@@ -1,11 +1,5 @@
 [
-  {
-    "id": "INC-2024-001",
-    "titre": "Écran noir",
-    "categorie": "Matériel",
-    "description": "L'écran de la salle 202 ne s'allume plus.",
-    "etat": "OPEN",
-    "dateCreation": "2024-05-20T10:30:00Z",
-    "idCreateur": "U001"
-  }
+  {"id": "0000000001", "titre": "Premier ticket", "categorie": "incident", "description": "Je test la cr�ation du ticket", "etat": "OPEN", "dateCreation": "24-02-2026", "idCreateur": "U001"},
+  {"id": "0000000002", "titre": "Mon premier ticket", "categorie": "incident", "description": "J'ai un probleme d'ecran", "etat": "OPEN", "dateCreation": "24-02-2026", "idCreateur": "U001"},
+  {"id": "0000000003", "titre": "je re teste encore", "categorie": "demande", "description": "on test ", "etat": "OPEN", "dateCreation": "24-02-2026", "idCreateur": "U001"}
 ]

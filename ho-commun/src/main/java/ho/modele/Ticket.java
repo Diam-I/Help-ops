@@ -1,6 +1,8 @@
 package ho.modele;
 
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Représente un incident métier échangé entre client et serveurs.
@@ -34,7 +36,7 @@ public class Ticket implements Serializable {
         this.titre = titre;
         this.categorie = categorie;
         this.description = description;
-        this.dateCreation = java.time.LocalDateTime.now().toString();
+        this.dateCreation = LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
         this.idCreateur = idCreateur;
         this.etat = "OPEN";
     }
@@ -58,6 +60,9 @@ public class Ticket implements Serializable {
     }
     public String getDateCreation() {
         return dateCreation;
+    }
+    public void setDateCreation(String dateCreation) {
+        this.dateCreation = dateCreation;
     }
     public String getIdCreateur() {
         return idCreateur;
