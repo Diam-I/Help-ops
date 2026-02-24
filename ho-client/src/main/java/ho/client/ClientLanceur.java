@@ -89,6 +89,7 @@ public class ClientLanceur {
                             System.out.println("Ticket créé avec succès ! ID : " + nouveauTicket.getId());
                             break;
                         case "2":
+
                             List<Ticket> tickets = ticketsService.listerTickets(token);
                             if (tickets == null || tickets.isEmpty()) {
                                 System.out.println("Vous n'avez aucun ticket.");
@@ -96,7 +97,9 @@ public class ClientLanceur {
                                 System.out.println("Vos tickets :");
                                 for (int i = 0; i < tickets.size(); i++) {
                                     Ticket t = tickets.get(i);
-                                    System.out.println((i + 1) + ". " + t.getId() + " " + t.getTitre() + " [" + t.getEtat() + "]");
+                                    if (t.getIdCreateur() != null && t.getIdCreateur().equals(getIdUtilisateur(token))) {
+                                        System.out.println((i + 1) + ". " + t.getId() + " " + t.getTitre() + " [" + t.getEtat() + "]");
+                                    }
                                 }
 
                                 while (true) {
@@ -211,5 +214,21 @@ public class ClientLanceur {
 
             System.out.println("Choix invalide, veuillez réessayer.");
         }
+    }
+
+    /**
+        * Extrait l'identifiant utilisateur encodé en fin de token.
+     */
+    private static String getIdUtilisateur(String token) {
+        if (token == null) {
+            return "";
+        }
+
+        int debut = token.lastIndexOf("-") + 1;
+        if (debut > 0 && debut < token.length()) {
+            return token.substring(debut);
+        }
+
+        return "";
     }
 }

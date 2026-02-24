@@ -46,7 +46,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         }
         log(login + " - token valide pour getTicket");
 
-        List<Ticket> tickets = chargerTickets();
+        List<Ticket> tickets = chargerTickets(token);
         for (Ticket ticket : tickets) {
             if (ticket.getId().equals(id)) {
                 return ticket;
@@ -76,10 +76,10 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
             throw new RemoteException("Token d'authentification invalide");
         }
         log(login + " - token valide pour declarerTicket");
-
+        String utilisateurId = token.substring(token.lastIndexOf("-") + 1);
         String id = genererIdTicket();
         String categorieFinale = normaliserCategorie(categorie);
-        Ticket ticket = new Ticket(id, titre, categorieFinale, description, "U001");
+        Ticket ticket = new Ticket(id, titre, categorieFinale, description, utilisateurId);
         sauvegarderTicket(ticket);
         log(login + " - ticket cree id='" + id + "' categorie='" + categorieFinale + "'");
         return ticket;
@@ -97,7 +97,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         }
         log(login + " - token valide pour listerTickets");
 
-        return chargerTickets();
+        return chargerTickets(token);
     }
 
     /**
@@ -152,11 +152,13 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
     /**
         * Charge les tickets depuis le fichier JSON de persistance.
      */
-    private List<Ticket> chargerTickets() throws RemoteException {
+    private List<Ticket> chargerTickets(String token) throws RemoteException {
         try {
             String contenu = lireContenuTicketsJson();
             List<String> objets = extraireObjetsJson(contenu);
             List<Ticket> tickets = new ArrayList<>();
+            IAuthService authService = connecterAuthService();
+            String idUtilisateur = authService.getIdUtilisateur(token);
 
             for (String objet : objets) {
                 String id = lireChamp(objet, "id");
@@ -178,7 +180,10 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                 if (!dateCreation.isEmpty()) {
                     ticket.setDateCreation(dateCreation);
                 }
-                tickets.add(ticket);
+                if (idUtilisateur.equals(idCreateur)) {
+                    tickets.add(ticket);
+                }
+
             }
 
             return tickets;

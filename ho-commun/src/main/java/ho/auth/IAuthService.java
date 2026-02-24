@@ -36,4 +36,14 @@ public interface IAuthService extends Remote {
      * @throws RemoteException en cas d'erreur de communication RMI
      */
     String getLoginByToken(String token) throws RemoteException;
+
+    
+    /**
+     * Recuperer l'identifiant de l'utilisateur
+     * @param utilisateur la ligne de l'utilisateur dans le fichier json
+     * @return l'identifiant de l'utilisateur
+     * @throws RemoteException en cas d'erreur RMI
+     * 
+     */
+    String getIdUtilisateur(String token) throws RemoteException;
 }

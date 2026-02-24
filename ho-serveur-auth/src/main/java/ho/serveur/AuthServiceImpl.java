@@ -86,7 +86,8 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
                 boolean passwordOk = utilisateur.contains("\"password\": \"" + password + "\"");
 
                 if (loginOk && passwordOk) {
-                    String token = "TOKEN-" + UUID.randomUUID();
+                    String idUtilisateur = extraireIdUtilisateurDepuisJson(utilisateur);
+                    String token = "TOKEN-" + UUID.randomUUID() + "-" + idUtilisateur;
                     tokensActifs.add(token);
                     tokenParLogin.put(token, login);
                     log(login + " - token genere " + token);
@@ -101,7 +102,52 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
         log("Authentification echouee pour login='" + login + "'");
         return null;
     }
+    @Override
+    public String getIdUtilisateur(String token) {
+        if (token == null || token.isBlank()) {
+            return "inconnu";
+        }
 
+        String tokenNettoye = token.trim();
+        int debut = tokenNettoye.lastIndexOf("-") + 1;
+        if (debut > 0 && debut < tokenNettoye.length()) {
+            return tokenNettoye.substring(debut);
+        }   
+        return "inconnu";
+    }
+
+    /**
+        * Extrait idUtilisateur depuis un bloc JSON utilisateur.
+     */
+    private String extraireIdUtilisateurDepuisJson(String utilisateurJson) {
+        if (utilisateurJson == null || utilisateurJson.isBlank()) {
+            return "inconnu";
+        }
+
+        String cle = "\"idUtilisateur\"";
+        int indexCle = utilisateurJson.indexOf(cle);
+        if (indexCle < 0) {
+            return "inconnu";
+        }
+
+        int indexDeuxPoints = utilisateurJson.indexOf(':', indexCle);
+        if (indexDeuxPoints < 0) {
+            return "inconnu";
+        }
+
+        int indexGuillemetDebut = utilisateurJson.indexOf('"', indexDeuxPoints + 1);
+        if (indexGuillemetDebut < 0) {
+            return "inconnu";
+        }
+
+        int indexGuillemetFin = utilisateurJson.indexOf('"', indexGuillemetDebut + 1);
+        if (indexGuillemetFin < 0) {
+            return "inconnu";
+        }
+
+        String id = utilisateurJson.substring(indexGuillemetDebut + 1, indexGuillemetFin).trim();
+        return id.isEmpty() ? "inconnu" : id;
+    }
     /**
         * Valide un token de session.
      *

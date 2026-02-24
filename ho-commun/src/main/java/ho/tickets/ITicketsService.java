@@ -43,4 +43,5 @@ public interface ITicketsService extends Remote {
      * @throws RemoteException en cas d'erreur RMI
      */
     Ticket declarerTicket(String token, String titre, String categorie, String description) throws RemoteException;
+
 }
