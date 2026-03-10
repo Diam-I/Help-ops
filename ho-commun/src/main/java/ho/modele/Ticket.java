@@ -19,25 +19,33 @@ public class Ticket implements Serializable {
     private String etat;
     private String dateCreation ; 
     private String idCreateur ; 
+    private String dateAssignation ;
+    private String idAgent ;
 
     /**
         * Construit un ticket avec l'état initial {@code OPEN}.
-     *
-      * @param id identifiant unique du ticket
-      * @param titre titre court du ticket
-      * @param categorie catégorie métier du ticket
-      * @param description description détaillée du ticket
-     * @param idCreateur identifiant du créateur du ticket
-     */
-    public Ticket(String id, String titre, String categorie, String description, String idCreateur) {
+        *
+        * @param id identifiant unique du ticket
+        * @param titre titre court du ticket
+        * @param categorie catégorie métier du ticket
+        * @param description description détaillée du ticket
+        * @param idCreateur identifiant du créateur du ticket
+        * @param dateCreation date de création du ticket
+        * @param etat état initial du ticket (OPEN, IN_PROGRESS, CLOSED)
+        * @param dateAssignation date d'assignation du ticket à un agent
+        * @param idAgent identifiant de l'agent assigné au ticket
+    */
+    public Ticket(String id, String titre, String categorie, String description, String idCreateur, String etat, String idAgent) {
         this.id = id;
         this.titre = titre;
         this.categorie = categorie;
         this.description = description;
         this.dateCreation = LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
         this.idCreateur = idCreateur;
-        this.etat = "OPEN";
+        this.etat = (etat == null || etat.isBlank()) ? "OPEN" : etat;
+        this.idAgent = (idAgent == null || idAgent.isBlank()) ? null : idAgent;
     }
+
     public String getId() {
         return id;
     }
@@ -64,6 +72,18 @@ public class Ticket implements Serializable {
     }
     public String getIdCreateur() {
         return idCreateur;
+    }
+    public void setDateAssignation(String dateAssignation) {
+        this.dateAssignation = dateAssignation;
+    }
+    public String getDateAssignation() {
+        return dateAssignation;
+    }
+    public String getIdAgent() {
+        return idAgent;
+    }
+    public void setIdAgent(String idAgent) {
+        this.idAgent = idAgent;
     }
     
 }

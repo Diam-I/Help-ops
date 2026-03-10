@@ -46,4 +46,11 @@ public interface IAuthService extends Remote {
      * 
      */
     String getIdUtilisateur(String token) throws RemoteException;
+
+    /**
+     * Recuperer le role de l'utilisateur
+     * @param token le token de session
+     * @return le role de l'utilisateur
+     */
+    String getRoleToken(String token) throws RemoteException;
 }

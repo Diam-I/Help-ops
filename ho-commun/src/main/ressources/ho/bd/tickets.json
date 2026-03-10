@@ -3,28 +3,34 @@
     "id": "0000000001",
     "titre": "Premier ticket",
     "categorie": "incident",
-    "description": "Je test la cr�ation du ticket",
-    "etat": "OPEN",
+    "description": "Je test la creation du ticket",
+    "etat": "ASSIGNED",
     "dateCreation": "24-02-2026",
-    "idCreateur": "U001"
+    "dateAssignation": "10-03-2026 23:14:08",
+    "idCreateur": "U001",
+    "idAgent": "U003"
   },
   {
     "id": "0000000002",
     "titre": "Mon premier ticket",
     "categorie": "incident",
     "description": "J'ai un probleme d'ecran",
-    "etat": "OPEN",
+    "etat": "ASSIGNED",
     "dateCreation": "24-02-2026",
-    "idCreateur": "U001"
+    "idCreateur": "U001",
+    "idAgent": "U003",
+    "dateAssigntation": "26-02-2026"
   },
   {
     "id": "0000000003",
     "titre": "je re teste encore",
     "categorie": "demande",
     "description": "on test ",
-    "etat": "OPEN",
+    "etat": "ASSIGNED",
     "dateCreation": "24-02-2026",
-    "idCreateur": "U001"
+    "idCreateur": "U001",
+    "idAgent": "U003",
+    "dateAssigntation": "27-02-2026"
   },
   {
     "id": "0000000004",
@@ -33,7 +39,9 @@
     "description": "Mon PC s eteint tout seul",
     "etat": "OPEN",
     "dateCreation": "24-02-2026",
-    "idCreateur": "U001"
+    "idCreateur": "U001",
+    "idAgent": null,
+    "dateAssigntation": null
   },
   {
     "id": "0000000005",
@@ -42,10 +50,63 @@
     "description": "Mon Word ne fonctionne pas",
     "etat": "OPEN",
     "dateCreation": "24-02-2026",
-    "idCreateur": "U002"
+    "idCreateur": "U002",
+    "idAgent": null,
+    "dateAssigntation": null
   },
-  {"id": "0000000006", "titre": "PC bug", "categorie": "incident", "description": "Mon PC bug sans raison", "etat": "OPEN", "dateCreation": "25-02-2026", "idCreateur": "U001"},
-  {"id": "0000000007", "titre": "Clavier", "categorie": "incident", "description": "Mon clavier ne fonctionne pas", "etat": "OPEN", "dateCreation": "25-02-2026", "idCreateur": "U001"},
-  {"id": "0000000008", "titre": "PFGHJKLM", "categorie": "incident", "description": "azertyu", "etat": "OPEN", "dateCreation": "25-02-2026", "idCreateur": "U001"},
-  {"id": "0000000009", "titre": "PC ", "categorie": "demande", "description": "Modifier mon fd", "etat": "OPEN", "dateCreation": "10-03-2026", "idCreateur": "U001"}
+  {
+    "id": "0000000006",
+    "titre": "PC bug",
+    "categorie": "incident",
+    "description": "Mon PC bug sans raison",
+    "etat": "ASSIGNED",
+    "dateCreation": "25-02-2026",
+    "idCreateur": "U001",
+    "idAgent": "U003",
+    "dateAssigntation": "03-03-2026"
+  },
+  {
+    "id": "0000000007",
+    "titre": "Clavier",
+    "categorie": "incident",
+    "description": "Mon clavier ne fonctionne pas",
+    "etat": "ASSIGNED",
+    "dateCreation": "25-02-2026",
+    "idCreateur": "U001",
+    "idAgent": "U003",
+    "dateAssigntation": "25-02-2026"
+  },
+  {
+    "id": "0000000008",
+    "titre": "PFGHJKLM",
+    "categorie": "incident",
+    "description": "azertyu",
+    "etat": "OPEN",
+    "dateCreation": "25-02-2026",
+    "idCreateur": "U001",
+    "idAgent": null,
+    "dateAssigntation": null
+  },
+  {
+    "id": "0000000009",
+    "titre": "PC ",
+    "categorie": "demande",
+    "description": "Modifier mon fd",
+    "etat": "ASSIGNED",
+    "dateCreation": "10-03-2026",
+    "dateAssignation": "10-03-2026 23:21:47",
+    "idCreateur": "U001",
+    "idAgent": "U003"
+  },
+  {
+    "id": "0000000010",
+    "titre": "TestBruno",
+    "categorie": "incident",
+    "description": "Bruno test ",
+    "etat": "ASSIGNED",
+    "dateCreation": "10-03-2026",
+    "dateAssignation": "10-03-2026 23:43:13",
+    "idCreateur": "U003",
+    "idAgent": "U001"
+  }
 ]

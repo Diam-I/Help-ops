@@ -21,6 +21,7 @@ public class ClientLanceur {
         * Démarre le client puis affiche le menu principal après authentification.
      *
      * @param args arguments de ligne de commande (non utilisés)
+     * 
      */
     public static void main(String[] args) {
         System.out.println("--- Client HELP'OPS ---");
@@ -32,6 +33,7 @@ public class ClientLanceur {
             }
 
             String token = null;
+            String roleToken = "utilisateur";
             int tentatives = 0;
 
             while (tentatives < 3 && token == null) {
@@ -45,6 +47,13 @@ public class ClientLanceur {
                     IAuthService authService = connecterAuthService();
                     System.out.println("Tentative d'authentification pour l'utilisateur '" + loginSaisie + "'...");
                     token = authService.login(loginSaisie, passwordSaisie);
+                    if (token != null) {
+                        try {
+                            roleToken = authService.getRoleToken(token);
+                        } catch (Exception ex) {
+                            roleToken = "utilisateur";
+                        }
+                    }
                 } catch (Exception e) {
                     System.out.println("Erreur : serveur d'authentification injoignable.");
                     if (!demanderReessai(scanner)) {
@@ -55,7 +64,7 @@ public class ClientLanceur {
                 }
 
                 if (token != null) {
-                    System.out.println("Authentification réussie.");
+                    System.out.println("Authentification réussie. Rôle: " + roleToken);
                 } else {
                     System.out.println("Utilisateur inconnu ou mot de passe incorrect.");
                     tentatives++;
@@ -72,10 +81,16 @@ public class ClientLanceur {
                 System.out.println("\nMenu :");
                 System.out.println("1. Créer un ticket");
                 System.out.println("2. Lister mes tickets");
-                System.out.println("3. Quitter");
+                if (roleToken.equalsIgnoreCase("agent")) {
+                    System.out.println("3. Lister mes tickets assignés");
+                    System.out.println("4. Afficher tous les tickets / Prendre en charge");
+                    System.out.println("5. Quitter");
+                } else {
+                    System.out.println("3. Quitter");
+                }
                 System.out.print("Choix : ");
 
-                String choix = scanner.nextLine();
+                String choix = scanner.nextLine().trim();
                 try {
                     ITicketsService ticketsService = connecterTicketsService();
                     switch (choix) {
@@ -130,13 +145,80 @@ public class ClientLanceur {
                             }
                             break;
                         case "3":
-                            quitter = true;
+                            if (roleToken.equalsIgnoreCase("agent")) {
+                                List<Ticket> ticketsAssignes = ticketsService.listerTicketsAssignes(token);
+                                if (ticketsAssignes == null || ticketsAssignes.isEmpty()) {
+                                    System.out.println("Aucun ticket assigné.");
+                                } else {
+                                    System.out.println("Tickets assignés :");
+                                    for (int i = 0; i < ticketsAssignes.size(); i++) {
+                                        Ticket t = ticketsAssignes.get(i);
+                                        System.out.println((i + 1) + ". [" + t.getEtat() + "] " + t.getTitre() + " (ID: " + t.getId() + ")");
+                                    }
+                                }
+                            } else {
+                                quitter = true;
+                            }
+                            break;
+                        case "4":
+                            if (roleToken.equalsIgnoreCase("agent")) {
+                                List<Ticket> ticketsAssignes = ticketsService.listerTousTickets(token);
+                                if (ticketsAssignes == null || ticketsAssignes.isEmpty()) {
+                                    System.out.println("Aucun ticket disponible.");
+                                } else {
+                                    System.out.println("Tous les tickets :");
+                                    for (int i = 0; i < ticketsAssignes.size(); i++) {
+                                        Ticket t = ticketsAssignes.get(i);
+                                        System.out.println((i + 1) + ". [" + t.getEtat() + "] " + t.getTitre() + " (ID: " + t.getId() + ")");
+                                    }
+
+                                    while (true) {
+                                        System.out.print("Quel ticket prendre en charge ? (numéro, 0 pour annuler) : ");
+                                        String saisie = scanner.nextLine().trim();
+
+                                        if ("0".equals(saisie)) {
+                                            break;
+                                        }
+
+                                        try {
+                                            int index = Integer.parseInt(saisie) - 1;
+                                            if (index >= 0 && index < ticketsAssignes.size()) {
+                                                Ticket selection = ticketsAssignes.get(index);
+                                                boolean success = ticketsService.prendreEnCharge(token, selection.getId());
+                                                if (success) {
+                                                    System.out.println("Ticket '" + selection.getTitre() + "' pris en charge avec succès !");
+                                                } else {
+                                                    System.out.println("Échec de la prise en charge du ticket.");
+                                                }
+                                                break;
+                                            }
+                                            System.out.println("Numéro invalide, veuillez réessayer.");
+                                        } catch (NumberFormatException e) {
+                                            System.out.println("Veuillez saisir un numéro valide.");
+                                        }
+                                    }
+                                }
+                            } else {
+                                System.out.println("Choix invalide, veuillez réessayer.");
+                            }
+                            break;
+                        case "5":
+                            if (roleToken.equalsIgnoreCase("agent")) {
+                                quitter = true;
+                            } else {
+                                System.out.println("Choix invalide, veuillez réessayer.");
+                            }
                             break;
                         default:
                             System.out.println("Choix invalide, veuillez réessayer.");
                     }
                 } catch (Exception e) {
-                    System.out.println("Erreur : serveur de tickets injoignable.");
+                    String message = e.getMessage();
+                    if (message == null || message.isBlank()) {
+                        System.out.println("Erreur : serveur de tickets injoignable.");
+                    } else {
+                        System.out.println("Erreur : " + message);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -146,6 +228,10 @@ public class ClientLanceur {
 
     /**
         * Récupère la référence distante du service d'authentification.
+        * 
+        * @return référence RMI vers IAuthService
+        * @throws Exception si le service n'est pas trouvé ou en cas d'erreur de communication
+        * 
      */
     private static IAuthService connecterAuthService() throws Exception {
         Registry registry = LocateRegistry.getRegistry("localhost", 1099);
@@ -154,6 +240,10 @@ public class ClientLanceur {
 
     /**
         * Récupère la référence distante du service de tickets.
+        * 
+        * @return référence RMI vers ITicketsService
+        * @throws Exception si le service n'est pas trouvé ou en cas d'erreur de communication
+        *
      */
     private static ITicketsService connecterTicketsService() throws Exception {
         Registry registry = LocateRegistry.getRegistry("localhost", 1099);
@@ -162,6 +252,10 @@ public class ClientLanceur {
 
     /**
         * Demande à l'utilisateur s'il souhaite retenter l'opération.
+        * 
+        * @param scanner Scanner pour lire la saisie utilisateur
+        * @return {@code true} si l'utilisateur souhaite réessayer, sinon {@code false}
+        *  
      */
     private static boolean demanderReessai(Scanner scanner) {
         System.out.println("1. Réessayer");
@@ -173,6 +267,9 @@ public class ClientLanceur {
 
     /**
         * Affiche le menu de démarrage du client.
+        * 
+        * @return {@code true} si l'utilisateur souhaite se connecter, sinon {@code false} pour quitter
+        * 
      */
     private static boolean demanderConnexion(Scanner scanner) {
         while (true) {
@@ -194,6 +291,10 @@ public class ClientLanceur {
 
     /**
         * Force le choix d'une catégorie métier valide.
+        * 
+        * @param scanner Scanner pour lire la saisie utilisateur
+        * @return "incident" ou "demande" selon le choix de l'utilisateur
+        *
      */
     private static String demanderCategorie(Scanner scanner) {
         while (true) {

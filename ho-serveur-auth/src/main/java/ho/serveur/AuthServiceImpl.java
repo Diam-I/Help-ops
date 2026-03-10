@@ -102,8 +102,17 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
         log("Authentification echouee pour login='" + login + "'");
         return null;
     }
+
+    /**
+     * Récupère l'identifiant de l'utilisateur associé à un token de session.
+     *
+     * @param token jeton d'authentification
+     * @return l'identifiant de l'utilisateur, ou "inconnu" si le token est invalide ou absent
+     * @throws RemoteException en cas d'erreur de communication RMI
+     */
+
     @Override
-    public String getIdUtilisateur(String token) {
+    public String getIdUtilisateur(String token) throws RemoteException {
         if (token == null || token.isBlank()) {
             return "inconnu";
         }
@@ -118,6 +127,9 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
 
     /**
         * Extrait idUtilisateur depuis un bloc JSON utilisateur.
+        * 
+        * @param utilisateurJson bloc JSON représentant un utilisateur
+        * @return l'idUtilisateur extrait, ou "inconnu" si absent ou erreur de format
      */
     private String extraireIdUtilisateurDepuisJson(String utilisateurJson) {
         if (utilisateurJson == null || utilisateurJson.isBlank()) {
@@ -148,12 +160,13 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
         String id = utilisateurJson.substring(indexGuillemetDebut + 1, indexGuillemetFin).trim();
         return id.isEmpty() ? "inconnu" : id;
     }
+
     /**
         * Valide un token de session.
-     *
-     * @param token token reçu d'un client ou d'un autre service
-     * @return {@code true} si le token est connu et actif, sinon {@code false}
-     * @throws RemoteException en cas d'erreur RMI
+        *
+        * @param token token reçu d'un client ou d'un autre service
+        * @return {@code true} si le token est connu et actif, sinon {@code false}
+        * @throws RemoteException en cas d'erreur RMI
      */
     @Override
     public boolean verifierToken(String token) throws RemoteException {
@@ -170,6 +183,7 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
         return valide;
     }
 
+
     /**
         * Retourne le login associé à un token.
      *
@@ -185,13 +199,117 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
         return tokenParLogin.get(token);
     }
 
+
     /**
         * Écrit un log horodaté pour suivre les actions.
-     *
-     * @param message message à afficher
+        *
+        * @param message message à afficher
      */
     private void log(String message) {
         String date = LocalDateTime.now().format(LOG_FORMAT);
         System.out.println("[" + date + "] " + message);
+    }
+
+    /**
+     * Récupère le rôle de l'utilisateur associé à un token de session.
+     * 
+     * @param token jeton d'authentification
+     * @return le rôle de l'utilisateur ("agent", "utilisateur", ou "inconnu")
+     * @throws RemoteException en cas d'erreur de communication RMI
+     */
+    @Override
+    public String getRoleToken(String token) throws RemoteException {
+        if (token == null || token.isBlank()) {
+            return "inconnu";
+        }
+
+        String login = tokenParLogin.get(token.trim());
+        if (login == null || login.isBlank()) {
+            return "inconnu";
+        }
+
+        try {
+            InputStream is = getClass().getClassLoader().getResourceAsStream("ho/bd/utilisateurs.json");
+
+            if (is == null) {
+                Path chemin = Path.of("ho-commun", "src", "main", "ressources", "ho", "bd", "utilisateurs.json");
+                if (Files.exists(chemin)) {
+                    is = Files.newInputStream(chemin);
+                }
+            }
+
+            if (is == null) {
+                Path chemin = Path.of("..", "ho-commun", "src", "main", "ressources", "ho", "bd", "utilisateurs.json");
+                if (Files.exists(chemin)) {
+                    is = Files.newInputStream(chemin);
+                }
+            }
+
+            if (is == null) {
+                log("Fichier utilisateurs.json non trouvé pour getRoleToken");
+                return "inconnu";
+            }
+
+            String contenu;
+            try (InputStream input = is) {
+                contenu = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+            }
+
+            // Extraire chaque objet utilisateur en comptant les accolades //
+            java.util.List<String> utilisateurs = extraireObjetsJson(contenu);
+            for (String utilisateur : utilisateurs) {
+                if (utilisateur.contains("\"login\": \"" + login + "\"")) {
+                    if (utilisateur.contains("\"role\": \"agent\"")) {
+                        log("Rôle trouvé pour " + login + ": agent");
+                        return "agent";
+                    }
+                    if (utilisateur.contains("\"role\": \"utilisateur\"")) {
+                        log("Rôle trouvé pour " + login + ": utilisateur");
+                        return "utilisateur";
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log("Erreur pendant la recuperation du role: " + e.getMessage());
+            e.printStackTrace();
+            throw new RemoteException("Impossible de recuperer le role utilisateur", e);
+        }
+
+        log("Rôle non trouvé pour " + login + ", retour inconnu");
+        return "inconnu";
+    }
+
+    /**
+     * Extrait chaque objet JSON d'un tableau en comptant les accolades (gère les imbrications).
+     * 
+     * @param json chaîne JSON contenant un tableau d'objets
+     * @return liste de chaînes JSON représentant chaque objet individuel
+     */
+    private java.util.List<String> extraireObjetsJson(String json) {
+        java.util.List<String> objets = new java.util.ArrayList<>();
+        if (json == null || json.isBlank()) {
+            return objets;
+        }
+
+        int niveau = 0;
+        int debut = -1;
+
+        for (int i = 0; i < json.length(); i++) {
+            char caractere = json.charAt(i);
+            if (caractere == '{') {
+                if (niveau == 0) {
+                    debut = i;
+                }
+                niveau++;
+            } else if (caractere == '}') {
+                niveau--;
+                if (niveau == 0 && debut >= 0) {
+                    objets.add(json.substring(debut, i + 1));
+                    debut = -1;
+                }
+            }
+        }
+
+        return objets;
     }
 }
