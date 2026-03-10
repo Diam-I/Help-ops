@@ -43,5 +43,9 @@
     "etat": "OPEN",
     "dateCreation": "24-02-2026",
     "idCreateur": "U002"
-  }
+  },
+  {"id": "0000000006", "titre": "PC bug", "categorie": "incident", "description": "Mon PC bug sans raison", "etat": "OPEN", "dateCreation": "25-02-2026", "idCreateur": "U001"},
+  {"id": "0000000007", "titre": "Clavier", "categorie": "incident", "description": "Mon clavier ne fonctionne pas", "etat": "OPEN", "dateCreation": "25-02-2026", "idCreateur": "U001"},
+  {"id": "0000000008", "titre": "PFGHJKLM", "categorie": "incident", "description": "azertyu", "etat": "OPEN", "dateCreation": "25-02-2026", "idCreateur": "U001"},
+  {"id": "0000000009", "titre": "PC ", "categorie": "demande", "description": "Modifier mon fd", "etat": "OPEN", "dateCreation": "10-03-2026", "idCreateur": "U001"}
 ]

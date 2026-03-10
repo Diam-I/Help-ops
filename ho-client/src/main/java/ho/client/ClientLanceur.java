@@ -97,9 +97,7 @@ public class ClientLanceur {
                                 System.out.println("Vos tickets :");
                                 for (int i = 0; i < tickets.size(); i++) {
                                     Ticket t = tickets.get(i);
-                                    if (t.getIdCreateur() != null && t.getIdCreateur().equals(getIdUtilisateur(token))) {
-                                        System.out.println((i + 1) + ". " + t.getId() + " " + t.getTitre() + " [" + t.getEtat() + "]");
-                                    }
+                                    System.out.println((i + 1) + ". [" + t.getEtat() + "] " + t.getTitre() + " (ID: " + t.getId() + ")");
                                 }
 
                                 while (true) {
@@ -214,21 +212,5 @@ public class ClientLanceur {
 
             System.out.println("Choix invalide, veuillez réessayer.");
         }
-    }
-
-    /**
-        * Extrait l'identifiant utilisateur encodé en fin de token.
-     */
-    private static String getIdUtilisateur(String token) {
-        if (token == null) {
-            return "";
-        }
-
-        int debut = token.lastIndexOf("-") + 1;
-        if (debut > 0 && debut < token.length()) {
-            return token.substring(debut);
-        }
-
-        return "";
     }
 }

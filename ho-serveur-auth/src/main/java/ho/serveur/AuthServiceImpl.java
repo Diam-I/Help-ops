@@ -23,7 +23,7 @@ import ho.auth.IAuthService;
 public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService {
 
     // Tokens actifs conservés en mémoire pour valider les sessions.
-    private final Set<String> tokensActifs = Collections.synchronizedSet(new HashSet<>());
+    private final Map<String, String> tokensActifs = new ConcurrentHashMap<>();
     // Association token -> login pour tracer les actions.
     private final Map<String, String> tokenParLogin = new ConcurrentHashMap<>();
     private static final DateTimeFormatter LOG_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
@@ -87,10 +87,10 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
 
                 if (loginOk && passwordOk) {
                     String idUtilisateur = extraireIdUtilisateurDepuisJson(utilisateur);
-                    String token = "TOKEN-" + UUID.randomUUID() + "-" + idUtilisateur;
-                    tokensActifs.add(token);
+                    String token = "TOKEN-" + UUID.randomUUID() ;
+                    tokensActifs.put(token, idUtilisateur);
                     tokenParLogin.put(token, login);
-                    log(login + " - token genere " + token);
+                    log(login + " ID: " + idUtilisateur + " - token genere " + token);
                     return token;
                 }
             }
@@ -109,11 +109,11 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
         }
 
         String tokenNettoye = token.trim();
-        int debut = tokenNettoye.lastIndexOf("-") + 1;
-        if (debut > 0 && debut < tokenNettoye.length()) {
-            return tokenNettoye.substring(debut);
-        }   
-        return "inconnu";
+        String idUtilisateur = tokensActifs.get(tokenNettoye);
+        if (idUtilisateur == null || idUtilisateur.isBlank()) {
+            return "inconnu";
+        }
+        return idUtilisateur;
     }
 
     /**
@@ -162,7 +162,7 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
             return false;
         }
 
-        boolean valide = tokensActifs.contains(token);
+        boolean valide = tokensActifs.containsKey(token);
         String login = tokenParLogin.get(token);
         String auteur = login == null ? "inconnu" : login;
         log("Verification token pour " + auteur);

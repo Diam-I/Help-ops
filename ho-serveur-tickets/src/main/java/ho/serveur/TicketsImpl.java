@@ -28,7 +28,6 @@ import ho.tickets.ITicketsService;
 public class TicketsImpl extends UnicastRemoteObject implements ITicketsService {
 
     private static final DateTimeFormatter LOG_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-
     protected TicketsImpl() throws RemoteException {
         super();
     }
@@ -76,7 +75,19 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
             throw new RemoteException("Token d'authentification invalide");
         }
         log(login + " - token valide pour declarerTicket");
-        String utilisateurId = token.substring(token.lastIndexOf("-") + 1);
+        String utilisateurId;
+        try {
+            IAuthService authService = connecterAuthService();
+            utilisateurId = authService.getIdUtilisateur(token);
+        } catch (Exception e) {
+            log("Serveur auth injoignable pour recuperer id utilisateur");
+            throw new RemoteException("Serveur d'authentification injoignable", e);
+        }
+        if (utilisateurId == null || "inconnu".equals(utilisateurId)) {
+            log("Utilisateur inconnu pour declarerTicket");
+            throw new RemoteException("Utilisateur inconnu");
+        }
+
         String id = genererIdTicket();
         String categorieFinale = normaliserCategorie(categorie);
         Ticket ticket = new Ticket(id, titre, categorieFinale, description, utilisateurId);
@@ -89,15 +100,27 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         * Liste les tickets après validation du token.
      */
     public List<Ticket> listerTickets(String token) throws RemoteException {
-        String login = recupererLogin(token);
-        log(login + " - listerTickets");
+        String idUtilisateur;
+        try {
+            IAuthService authService = connecterAuthService();
+            idUtilisateur = authService.getIdUtilisateur(token);
+        } catch (Exception e) {
+            log("Serveur auth injoignable pour recuperer id utilisateur");
+            throw new RemoteException("Serveur d'authentification injoignable", e);
+        }
+
+        log(idUtilisateur + " - listerTickets");
         if (!tokenValide(token)) {
-            log(login + " - token invalide pour listerTickets");
+            log(idUtilisateur + " - token invalide pour listerTickets");
             throw new RemoteException("Token d'authentification invalide");
         }
-        log(login + " - token valide pour listerTickets");
+        if (idUtilisateur == null || "inconnu".equals(idUtilisateur)) {
+            log("Utilisateur inconnu pour listerTickets");
+            throw new RemoteException("Utilisateur inconnu");
+        } 
+        log(idUtilisateur + " - token valide pour listerTickets");
 
-        return chargerTickets(token);
+        return chargerTickets(idUtilisateur);
     }
 
     /**
@@ -152,35 +175,35 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
     /**
         * Charge les tickets depuis le fichier JSON de persistance.
      */
-    private List<Ticket> chargerTickets(String token) throws RemoteException {
+    private List<Ticket> chargerTickets(String idConnecte) throws RemoteException {
         try {
             String contenu = lireContenuTicketsJson();
             List<String> objets = extraireObjetsJson(contenu);
             List<Ticket> tickets = new ArrayList<>();
-            IAuthService authService = connecterAuthService();
-            String idUtilisateur = authService.getIdUtilisateur(token);
 
             for (String objet : objets) {
                 String id = lireChamp(objet, "id");
-                String titre = lireChamp(objet, "titre");
-                String categorie = lireChamp(objet, "categorie");
-                String description = lireChamp(objet, "description");
+                
                 String idCreateur = lireChamp(objet, "idCreateur");
-                String etat = lireChamp(objet, "etat");
-                String dateCreation = lireChamp(objet, "dateCreation");
-
+                
                 if (id.isEmpty()) {
                     continue;
                 }
 
-                Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur);
-                if (!etat.isEmpty()) {
-                    ticket.setEtat(etat);
-                }
-                if (!dateCreation.isEmpty()) {
-                    ticket.setDateCreation(dateCreation);
-                }
-                if (idUtilisateur.equals(idCreateur)) {
+                
+                if (idConnecte.equals(idCreateur)) {
+                    String titre = lireChamp(objet, "titre");
+                    String categorie = lireChamp(objet, "categorie");
+                    String description = lireChamp(objet, "description");
+                    String etat = lireChamp(objet, "etat");
+                    String dateCreation = lireChamp(objet, "dateCreation");
+                    Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur);
+                    if (!etat.isEmpty()) {
+                        ticket.setEtat(etat);
+                    }
+                    if (!dateCreation.isEmpty()) {
+                        ticket.setDateCreation(dateCreation);
+                    }
                     tickets.add(ticket);
                 }
 
@@ -290,21 +313,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         System.out.println("[" + date + "] " + message);
     }
 
-    /**
-        * Récupère le login associé au token pour améliorer la lisibilité des logs.
-     */
-    private String recupererLogin(String token) {
-        if (token == null) {
-            return "inconnu";
-        }
-        try {
-            IAuthService authService = connecterAuthService();
-            String login = authService.getLoginByToken(token.trim());
-            return login == null ? "inconnu" : login;
-        } catch (Exception e) {
-            return "inconnu";
-        }
-    }
+
 
     /**
         * Cherche le chemin de tickets.json selon le dossier de lancement.
@@ -352,6 +361,22 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         }
 
         return objets;
+    }
+
+    /**
+        * Récupère le login associé au token pour améliorer la lisibilité des logs.
+     */
+    private String recupererLogin(String token) {
+        if (token == null) {
+            return "inconnu";
+        }
+        try {
+            IAuthService authService = connecterAuthService();
+            String login = authService.getLoginByToken(token.trim());
+            return login == null ? "inconnu" : login;
+        } catch (Exception e) {
+            return "inconnu";
+        }
     }
 
     /**
