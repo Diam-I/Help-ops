@@ -73,4 +73,14 @@ public interface ITicketsService extends Remote {
      * @throws RemoteException en cas d'erreur RMI
      */
     boolean prendreEnCharge(String token, String idTicket) throws RemoteException;
+
+    /**
+     * Libère un ticket déjà assigné à l'agent connecté.
+     *
+     * @param token jeton d'authentification de l'agent
+     * @param idTicket identifiant du ticket à libérer
+     * @return {@code true} si la libération est réussie, {@code false} sinon
+     * @throws RemoteException en cas d'erreur RMI
+     */
+    boolean libererTicket(String token, String idTicket) throws RemoteException;
 }   

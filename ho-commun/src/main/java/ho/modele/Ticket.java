@@ -1,7 +1,7 @@
 package ho.modele;
 
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
@@ -40,7 +40,7 @@ public class Ticket implements Serializable {
         this.titre = titre;
         this.categorie = categorie;
         this.description = description;
-        this.dateCreation = LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        this.dateCreation = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
         this.idCreateur = idCreateur;
         this.etat = (etat == null || etat.isBlank()) ? "OPEN" : etat;
         this.idAgent = (idAgent == null || idAgent.isBlank()) ? null : idAgent;

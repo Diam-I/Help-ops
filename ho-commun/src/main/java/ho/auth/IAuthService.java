@@ -37,6 +37,15 @@ public interface IAuthService extends Remote {
      */
     String getLoginByToken(String token) throws RemoteException;
 
+    /**
+     * Retourne le nom complet associe au jeton si connu.
+     *
+     * @param token jeton de session
+     * @return nom utilisateur ou "inconnu" si absent
+     * @throws RemoteException en cas d'erreur de communication RMI
+     */
+    String getNomByToken(String token) throws RemoteException;
+
     
     /**
      * Recuperer l'identifiant de l'utilisateur
@@ -53,4 +62,13 @@ public interface IAuthService extends Remote {
      * @return le role de l'utilisateur
      */
     String getRoleToken(String token) throws RemoteException;
+
+    /**
+     * Retourne le nom complet associe a un identifiant utilisateur.
+     *
+     * @param idUtilisateur identifiant technique utilisateur
+     * @return nom utilisateur, ou "inconnu" si introuvable
+     * @throws RemoteException en cas d'erreur de communication RMI
+     */
+    String getNomUtilisateurParId(String idUtilisateur) throws RemoteException;
 }

@@ -26,6 +26,8 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
     private final Map<String, String> tokensActifs = new ConcurrentHashMap<>();
     // Association token -> login pour tracer les actions.
     private final Map<String, String> tokenParLogin = new ConcurrentHashMap<>();
+    // Association token -> nom complet utilisateur.
+    private final Map<String, String> tokenParNom = new ConcurrentHashMap<>();
     private static final DateTimeFormatter LOG_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     /**
@@ -87,9 +89,11 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
 
                 if (loginOk && passwordOk) {
                     String idUtilisateur = extraireIdUtilisateurDepuisJson(utilisateur);
+                    String nomUtilisateur = extraireNomDepuisJson(utilisateur);
                     String token = "TOKEN-" + UUID.randomUUID() ;
                     tokensActifs.put(token, idUtilisateur);
                     tokenParLogin.put(token, login);
+                    tokenParNom.put(token, nomUtilisateur);
                     log(login + " ID: " + idUtilisateur + " - token genere " + token);
                     return token;
                 }
@@ -161,6 +165,36 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
         return id.isEmpty() ? "inconnu" : id;
     }
 
+    private String extraireNomDepuisJson(String utilisateurJson) {
+        if (utilisateurJson == null || utilisateurJson.isBlank()) {
+            return "inconnu";
+        }
+
+        String cle = "\"nom\"";
+        int indexCle = utilisateurJson.indexOf(cle);
+        if (indexCle < 0) {
+            return "inconnu";
+        }
+
+        int indexDeuxPoints = utilisateurJson.indexOf(':', indexCle);
+        if (indexDeuxPoints < 0) {
+            return "inconnu";
+        }
+
+        int indexGuillemetDebut = utilisateurJson.indexOf('"', indexDeuxPoints + 1);
+        if (indexGuillemetDebut < 0) {
+            return "inconnu";
+        }
+
+        int indexGuillemetFin = utilisateurJson.indexOf('"', indexGuillemetDebut + 1);
+        if (indexGuillemetFin < 0) {
+            return "inconnu";
+        }
+
+        String nom = utilisateurJson.substring(indexGuillemetDebut + 1, indexGuillemetFin).trim();
+        return nom.isEmpty() ? "inconnu" : nom;
+    }
+
     /**
         * Valide un token de session.
         *
@@ -197,6 +231,67 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
             return null;
         }
         return tokenParLogin.get(token);
+    }
+
+    @Override
+    public String getNomByToken(String token) throws RemoteException {
+        if (token == null || token.isBlank()) {
+            return "inconnu";
+        }
+
+        String nom = tokenParNom.get(token.trim());
+        if (nom == null || nom.isBlank()) {
+            return "inconnu";
+        }
+
+        return nom;
+    }
+
+    @Override
+    public String getNomUtilisateurParId(String idUtilisateur) throws RemoteException {
+        if (idUtilisateur == null || idUtilisateur.isBlank()) {
+            return "inconnu";
+        }
+
+        String idRecherche = idUtilisateur.trim();
+        try {
+            InputStream is = getClass().getClassLoader().getResourceAsStream("ho/bd/utilisateurs.json");
+
+            if (is == null) {
+                Path chemin = Path.of("ho-commun", "src", "main", "ressources", "ho", "bd", "utilisateurs.json");
+                if (Files.exists(chemin)) {
+                    is = Files.newInputStream(chemin);
+                }
+            }
+
+            if (is == null) {
+                Path chemin = Path.of("..", "ho-commun", "src", "main", "ressources", "ho", "bd", "utilisateurs.json");
+                if (Files.exists(chemin)) {
+                    is = Files.newInputStream(chemin);
+                }
+            }
+
+            if (is == null) {
+                return "inconnu";
+            }
+
+            String contenu;
+            try (InputStream input = is) {
+                contenu = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+            }
+
+            java.util.List<String> utilisateurs = extraireObjetsJson(contenu);
+            for (String utilisateur : utilisateurs) {
+                if (utilisateur.contains("\"idUtilisateur\": \"" + idRecherche + "\"")) {
+                    String nom = extraireNomDepuisJson(utilisateur);
+                    return nom == null || nom.isBlank() ? "inconnu" : nom;
+                }
+            }
+        } catch (Exception e) {
+            throw new RemoteException("Impossible de recuperer le nom utilisateur", e);
+        }
+
+        return "inconnu";
     }
 
 

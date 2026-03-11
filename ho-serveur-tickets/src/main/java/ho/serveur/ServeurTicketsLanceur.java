@@ -12,7 +12,7 @@ import ho.tickets.ITicketsService;
  */
 public class ServeurTicketsLanceur {
     /**
-     * Démarre le registre RMI et publie le service de gestion des tickets.
+     * Publie le service de gestion des tickets dans un registre RMI déjà démarré.
      *
      * @param args arguments de ligne de commande (non utilisés)
      */
@@ -20,23 +20,16 @@ public class ServeurTicketsLanceur {
         try {
             System.setProperty("java.rmi.server.hostname", "localhost");
 
-            // Récupère le registre RMI, ou le crée s'il n'existe pas.
-            Registry reg;
-            try {
-                reg = LocateRegistry.getRegistry(1099);
-                reg.list(); 
-                System.out.println(">>> Registre RMI existant trouvé.");
-            } catch (Exception e) {
-                reg = LocateRegistry.createRegistry(1099);
-                System.out.println(">>> Registre RMI créé sur le port 1099.");
-            }
+            Registry reg = LocateRegistry.getRegistry(1099);
+            reg.list();
+            System.out.println(">>> Registre RMI existant trouvé.");
 
             ITicketsService tickets = new TicketsImpl();
             reg.rebind("TicketsService", tickets);
 
             System.out.println(">>> Serveur de Tickets démarré.");
         } catch (Exception e) {
-            System.err.println("Erreur lors démarrage du serveur de tickets :");
+            System.err.println("Erreur lors démarrage du serveur de tickets (registre RMI indisponible ?) :");
             e.printStackTrace();
         }
     }

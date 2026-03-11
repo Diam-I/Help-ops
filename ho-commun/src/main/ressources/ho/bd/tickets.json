@@ -108,5 +108,7 @@
     "dateAssignation": "10-03-2026 23:43:13",
     "idCreateur": "U003",
     "idAgent": "U001"
-  }
+  },
+  {"id": "0000000011", "titre": "Oulalaa", "categorie": "demande", "description": "Mon pc ne foncionne plus � cause d'Amina", "etat": "OPEN", "dateCreation": "11-03-2026", "dateAssignation": "11-03-2026 13:02:38", "idCreateur": "U001", "idAgent": ""},
+  {"id": "0000000012", "titre": "Je cr�er", "categorie": "incident", "description": "edf", "etat": "OPEN", "dateCreation": "11-03-2026", "dateAssignation": "11-03-2026 13:39:10", "idCreateur": "U003", "idAgent": ""}
 ]

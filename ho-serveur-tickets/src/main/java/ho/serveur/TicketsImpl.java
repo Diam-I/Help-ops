@@ -316,6 +316,9 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                     if (!dateCreation.isEmpty()) {
                         ticket.setDateCreation(dateCreation);
                     }
+                    if (!dateAssignation.isEmpty()) {
+                        ticket.setDateAssignation(dateAssignation);
+                    }
                     tickets.add(ticket);
                 }
 
@@ -768,6 +771,75 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                 log("Erreur lors de la prise en charge du ticket: " + e.getMessage());
                 throw new RemoteException("Erreur lors de la prise en charge", e);
             }
+        }
+    }
+
+    @Override
+    public boolean libererTicket(String token, String idTicket) throws RemoteException {
+        String role;
+        String idAgentConnecte;
+        try {
+            IAuthService authService = connecterAuthService();
+            role = authService.getRoleToken(token);
+            idAgentConnecte = authService.getIdUtilisateur(token);
+        } catch (Exception e) {
+            throw new RemoteException("Serveur d'authentification injoignable", e);
+        }
+
+        if (!"agent".equalsIgnoreCase(role)) {
+            log("Libération refusée : rôle '" + role + "' ne permet pas cette action");
+            return false;
+        }
+        if (idAgentConnecte == null || "inconnu".equals(idAgentConnecte)) {
+            log("Libération refusée : agent inconnu");
+            return false;
+        }
+
+        try {
+            String contenu = lireContenuTicketsJson();
+            List<String> objets = extraireObjetsJson(contenu);
+
+            for (String objet : objets) {
+                String id = lireChamp(objet, "id");
+                if (!id.equals(idTicket)) {
+                    continue;
+                }
+
+                String titre = lireChamp(objet, "titre");
+                String categorie = lireChamp(objet, "categorie");
+                String description = lireChamp(objet, "description");
+                String etat = lireChamp(objet, "etat");
+                String dateCreation = lireChamp(objet, "dateCreation");
+                String idCreateur = lireChamp(objet, "idCreateur");
+                String idAgentExistant = lireChamp(objet, "idAgent");
+
+                if (idAgentExistant == null || idAgentExistant.isBlank()) {
+                    throw new RemoteException("Ce ticket n'est pas assigné.");
+                }
+                if (!idAgentConnecte.equals(idAgentExistant)) {
+                    throw new RemoteException("Ce ticket est assigné à un autre agent (" + idAgentExistant + ").");
+                }
+
+                Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, null);
+                if (!dateCreation.isEmpty()) {
+                    ticket.setDateCreation(dateCreation);
+                }
+
+                ticket.setEtat("OPEN");
+                ticket.setIdAgent(null);
+                ticket.setDateAssignation("");
+                sauvegarderTicket(ticket);
+                log("Ticket " + idTicket + " libéré par agent " + idAgentConnecte);
+                return true;
+            }
+
+            log("Ticket " + idTicket + " non trouvé pour libération");
+            return false;
+        } catch (RemoteException e) {
+            throw e;
+        } catch (Exception e) {
+            log("Erreur lors de la libération du ticket: " + e.getMessage());
+            throw new RemoteException("Erreur lors de la libération", e);
         }
     }
 }
