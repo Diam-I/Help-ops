@@ -26,8 +26,6 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
     private final Map<String, String> tokensActifs = new ConcurrentHashMap<>();
     // Association token -> login pour tracer les actions.
     private final Map<String, String> tokenParLogin = new ConcurrentHashMap<>();
-    // Association token -> nom complet utilisateur.
-    private final Map<String, String> tokenParNom = new ConcurrentHashMap<>();
     private static final DateTimeFormatter LOG_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     /**
@@ -89,11 +87,9 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
 
                 if (loginOk && passwordOk) {
                     String idUtilisateur = extraireIdUtilisateurDepuisJson(utilisateur);
-                    String nomUtilisateur = extraireNomDepuisJson(utilisateur);
                     String token = "TOKEN-" + UUID.randomUUID() ;
                     tokensActifs.put(token, idUtilisateur);
                     tokenParLogin.put(token, login);
-                    tokenParNom.put(token, nomUtilisateur);
                     log(login + " ID: " + idUtilisateur + " - token genere " + token);
                     return token;
                 }
@@ -239,12 +235,12 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
             return "inconnu";
         }
 
-        String nom = tokenParNom.get(token.trim());
-        if (nom == null || nom.isBlank()) {
+        String idUtilisateur = getIdUtilisateur(token.trim());
+        if (idUtilisateur == null || idUtilisateur.isBlank() || "inconnu".equals(idUtilisateur)) {
             return "inconnu";
         }
 
-        return nom;
+        return getNomUtilisateurParId(idUtilisateur);
     }
 
     @Override
