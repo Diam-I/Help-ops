@@ -756,7 +756,6 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                         if (!dateCreation.isEmpty()) {
                             ticket.setDateCreation(dateCreation);
                         }
-                        
                         ticket.setEtat("ASSIGNED");
                         ticket.setIdAgent(idAgent);
                         ticket.setDateAssignation(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")));

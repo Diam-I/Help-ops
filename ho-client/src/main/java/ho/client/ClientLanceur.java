@@ -64,7 +64,7 @@ public class ClientLanceur {
                 }
 
                 if (token != null) {
-                    System.out.println("Authentification réussie. Rôle: " + roleToken);
+                    System.out.println("Authentification réussie.");
                 } else {
                     System.out.println("Utilisateur inconnu ou mot de passe incorrect.");
                     tentatives++;
@@ -82,8 +82,8 @@ public class ClientLanceur {
                 System.out.println("1. Créer un ticket");
                 System.out.println("2. Lister mes tickets");
                 if (roleToken.equalsIgnoreCase("agent")) {
-                    System.out.println("3. Lister mes tickets assignés");
-                    System.out.println("4. Afficher tous les tickets / Prendre en charge");
+                    System.out.println("3. Lister les tickets à ma charge");
+                    System.out.println("4. Afficher tous les tickets / Prendre en charge un ticket");
                     System.out.println("5. Quitter");
                 } else {
                     System.out.println("3. Quitter");

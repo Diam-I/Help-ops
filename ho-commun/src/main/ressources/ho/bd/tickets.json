@@ -5,7 +5,7 @@
     "categorie": "incident",
     "description": "Je test la creation du ticket",
     "etat": "ASSIGNED",
-    "dateCreation": "24-02-2026",
+    "dateCreation": "24-02-2026 23:09:08",
     "dateAssignation": "10-03-2026 23:14:08",
     "idCreateur": "U001",
     "idAgent": "U003"
@@ -16,10 +16,10 @@
     "categorie": "incident",
     "description": "J'ai un probleme d'ecran",
     "etat": "ASSIGNED",
-    "dateCreation": "24-02-2026",
+    "dateCreation": "24-02-2026 23:09:08",
     "idCreateur": "U001",
     "idAgent": "U003",
-    "dateAssigntation": "26-02-2026"
+    "dateAssigntation": "26-02-2026 08:09:08"
   },
   {
     "id": "0000000003",
@@ -27,10 +27,10 @@
     "categorie": "demande",
     "description": "on test ",
     "etat": "ASSIGNED",
-    "dateCreation": "24-02-2026",
+    "dateCreation": "24-02-2026 13:09:08",
     "idCreateur": "U001",
     "idAgent": "U003",
-    "dateAssigntation": "27-02-2026"
+    "dateAssigntation": "27-02-2026 16:09:08"
   },
   {
     "id": "0000000004",
@@ -38,7 +38,7 @@
     "categorie": "incident",
     "description": "Mon PC s eteint tout seul",
     "etat": "OPEN",
-    "dateCreation": "24-02-2026",
+    "dateCreation": "24-02-2026 14:09:08",
     "idCreateur": "U001",
     "idAgent": null,
     "dateAssigntation": null
@@ -49,7 +49,7 @@
     "categorie": "incident",
     "description": "Mon Word ne fonctionne pas",
     "etat": "OPEN",
-    "dateCreation": "24-02-2026",
+    "dateCreation": "24-02-2026 15:19:08",
     "idCreateur": "U002",
     "idAgent": null,
     "dateAssigntation": null
@@ -60,10 +60,10 @@
     "categorie": "incident",
     "description": "Mon PC bug sans raison",
     "etat": "ASSIGNED",
-    "dateCreation": "25-02-2026",
+    "dateCreation": "25-02-2026 13:19:08",
     "idCreateur": "U001",
     "idAgent": "U003",
-    "dateAssigntation": "03-03-2026"
+    "dateAssigntation": "03-03-2026 13:14:08"
   },
   {
     "id": "0000000007",
@@ -71,10 +71,10 @@
     "categorie": "incident",
     "description": "Mon clavier ne fonctionne pas",
     "etat": "ASSIGNED",
-    "dateCreation": "25-02-2026",
+    "dateCreation": "25-02-2026 13:19:08",
     "idCreateur": "U001",
     "idAgent": "U003",
-    "dateAssigntation": "25-02-2026"
+    "dateAssigntation": "25-02-2026 14:19:08"
   },
   {
     "id": "0000000008",
@@ -82,7 +82,7 @@
     "categorie": "incident",
     "description": "azertyu",
     "etat": "OPEN",
-    "dateCreation": "25-02-2026",
+    "dateCreation": "25-02-2026 14:09:08",
     "idCreateur": "U001",
     "idAgent": null,
     "dateAssigntation": null
@@ -92,23 +92,43 @@
     "titre": "PC ",
     "categorie": "demande",
     "description": "Modifier mon fd",
-    "etat": "ASSIGNED",
-    "dateCreation": "10-03-2026",
-    "dateAssignation": "10-03-2026 23:21:47",
+    "etat": "OPEN",
+    "dateCreation": "10-03-2026 13:21:47",
+    "dateAssignation": "",
     "idCreateur": "U001",
-    "idAgent": "U003"
+    "idAgent": ""
   },
   {
     "id": "0000000010",
     "titre": "TestBruno",
     "categorie": "incident",
     "description": "Bruno test ",
-    "etat": "ASSIGNED",
-    "dateCreation": "10-03-2026",
-    "dateAssignation": "10-03-2026 23:43:13",
+    "etat": "OPEN",
+    "dateCreation": "10-03-2026 13:43:13",
+    "dateAssignation": "",
     "idCreateur": "U003",
-    "idAgent": "U001"
+    "idAgent": ""
   },
-  {"id": "0000000011", "titre": "Oulalaa", "categorie": "demande", "description": "Mon pc ne foncionne plus � cause d'Amina", "etat": "OPEN", "dateCreation": "11-03-2026", "dateAssignation": "11-03-2026 13:02:38", "idCreateur": "U001", "idAgent": ""},
-  {"id": "0000000012", "titre": "Je cr�er", "categorie": "incident", "description": "edf", "etat": "OPEN", "dateCreation": "11-03-2026", "dateAssignation": "11-03-2026 13:39:10", "idCreateur": "U003", "idAgent": ""}
+  {
+    "id": "0000000011",
+    "titre": "Oulalaa",
+    "categorie": "demande",
+    "description": "Mon pc ne foncionne plus a cause d'Amina",
+    "etat": "OPEN",
+    "dateCreation": "11-03-2026 10:02:38",
+    "dateAssignation": "11-03-2026 13:02:38",
+    "idCreateur": "U001",
+    "idAgent": ""
+  },
+  {
+    "id": "0000000012",
+    "titre": "Je creer",
+    "categorie": "incident",
+    "description": "edf",
+    "etat": "OPEN",
+    "dateCreation": "11-03-2026 10:02:38",
+    "dateAssignation": "11-03-2026 13:39:10",
+    "idCreateur": "U003",
+    "idAgent": ""
+  }
 ]
