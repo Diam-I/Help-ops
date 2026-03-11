@@ -1,301 +1,147 @@
 # Projet HELP'OPS
 
-## 1) Objectif du projet
+## 1) Objectif
 
-HELP'OPS est une application distribuée de gestion de tickets d’assistance.
-Elle permet à un utilisateur de :
-- s’authentifier,
-- créer un ticket,
-- lister les tickets.
+HELP'OPS est une application distribuée de gestion de tickets d'assistance basée sur Java RMI.
 
-Le projet est basé sur Java RMI, avec séparation claire des responsabilités entre les services.
+Fonctionnalités principales :
+- authentification utilisateur,
+- création de tickets,
+- consultation des tickets,
+- prise en charge des tickets par les agents,
+- libération d'un ticket par l'agent qui en est responsable.
 
-## 2) Architecture globale
+## 2) Architecture
 
-Le workspace est organisé en modules Maven :
+Le projet est découpé en modules Maven :
 
-- `ho-commun` : interfaces distantes RMI + modèle de données partagé (`Ticket`).
-- `ho-serveur-auth` : authentification, génération et validation des tokens.
-- `ho-serveur-tickets` : opérations métier sur les tickets et persistance JSON.
-- `ho-client` : interface console utilisateur.
+- `ho-commun` : contrats RMI + modèle métier partagé (`Ticket`).
+- `ho-serveur-auth` : authentification, tokens, résolution des identités utilisateur.
+- `ho-serveur-tickets` : logique métier des tickets + persistance JSON.
+- `ho-client` : interface console.
 
-Cette architecture permet d’éviter le couplage fort entre client et implémentations serveurs.
+## 3) Contrats RMI (résumé)
 
-## 3) Contrats RMI (module commun)
+### `IAuthService`
+Principales opérations :
+- `login(login, password)`
+- `verifierToken(token)`
+- `getLoginByToken(token)`
+- `getIdUtilisateur(token)`
+- `getRoleToken(token)`
+- `getNomByToken(token)`
+- `getNomUtilisateurParId(idUtilisateur)`
 
-Le client et les serveurs communiquent uniquement via des interfaces distantes.
+### `ITicketsService`
+Principales opérations :
+- `declarerTicket(...)`
+- `listerTickets(token)`
+- `listerTicketsAssignes(token)`
+- `listerTousTickets(token)`
+- `prendreEnCharge(token, idTicket)`
+- `libererTicket(token, idTicket)`
 
-Exemple d’interface d’authentification (`IAuthService`) :
+## 4) Registre RMI
 
-```java
-public interface IAuthService extends Remote {
-    String login(String login, String motDePasse) throws RemoteException;
-    boolean verifierToken(String token) throws RemoteException;
-    String getLoginByToken(String token) throws RemoteException;
-}
-```
+Règle projet : seul le serveur d'authentification crée le registre RMI.
 
-Exemple d’interface tickets (`ITicketsService`) :
+- `ServeurAuthLanceur` : crée le registre sur `1099` si absent, puis publie `AuthService`.
+- `ServeurTicketsLanceur` : ne crée pas le registre, il se connecte à un registre existant puis publie `TicketsService`.
 
-```java
-public interface ITicketsService extends Remote {
-    Ticket declarerTicket(String token, String titre, String categorie, String description) throws RemoteException;
-    List<Ticket> listerTickets(String token) throws RemoteException;
-    Ticket getTicket(String token, String id) throws RemoteException;
-}
-```
+Conséquence : il faut démarrer Auth avant Tickets.
 
-Point important : les signatures sont centralisées dans `ho-commun`, ce qui garantit un contrat unique entre client et serveurs.
+## 5) Authentification et identité
 
-## 4) Démarrage des serveurs et registre RMI
+Le serveur d'authentification est l'autorité centrale :
+- validation des identifiants,
+- génération des tokens (`TOKEN-{UUID}`),
+- validation de tokens pour les autres services,
+- résolution des informations utilisateur (id, rôle, nom).
 
-Chaque serveur publie son service dans le registre RMI sur le port `1099`.
+Le client ne lit pas directement les JSON utilisateurs : il interroge `AuthService`.
 
-Exemple de démarrage d’un serveur :
+## 6) Métier ticket
 
-```java
-System.setProperty("java.rmi.server.hostname", "localhost");
-Registry reg;
-try {
-    reg = LocateRegistry.getRegistry(1099);
-    reg.list();
-} catch (Exception e) {
-    reg = LocateRegistry.createRegistry(1099);
-}
-reg.rebind("AuthService", authServiceImpl);
-```
-
-Pourquoi `localhost` est important : cela évite les références réseau non joignables dans les stubs RMI pendant les tests locaux.
-
-## 5) Authentification et gestion des tokens
-
-Le serveur d’authentification est la seule autorité de validation.
-
-Principe :
-- `login()` valide les identifiants,
-- génère un token de type `TOKEN-{UUID}`,
-- conserve les tokens actifs en mémoire,
-- expose `verifierToken()` et `getLoginByToken()` pour les autres services.
-
-Extrait simplifié :
-
-```java
-String token = "TOKEN-" + UUID.randomUUID();
-tokensActifs.add(token);
-tokenParLogin.put(token, login);
-```
-
-Validation :
-
-```java
-public boolean verifierToken(String token) throws RemoteException {
-    if (token == null) {
-        log("Verification token (null)");
-        return false;
-    }
-    boolean valide = tokensActifs.contains(token);
-    String auteur = tokenParLogin.getOrDefault(token, "inconnu");
-    log("Verification token pour " + auteur);
-    log("token " + (valide ? "valide" : "non valide"));
-    return valide;
-}
-```
-
-## 6) Validation inter-serveurs (point clé d’architecture)
-
-Le serveur tickets ne valide pas localement le token :
-il appelle le serveur auth via RMI.
-
-Flux réel :
-1. Le client envoie son token au serveur tickets.
-2. Le serveur tickets appelle `authService.verifierToken(token)`.
-3. Le serveur auth renvoie vrai/faux et journalise la décision.
-4. Le serveur tickets continue ou rejette la requête.
-
-Extrait simplifié côté tickets :
-
-```java
-IAuthService authService = connecterAuthService();
-boolean valide = authService.verifierToken(tokenNettoye);
-String login = authService.getLoginByToken(tokenNettoye);
-log("Serveur Ticket verifie le token de " + (login == null ? "inconnu" : login) + " aupres du Serveur Auth");
-if (!valide) {
-    throw new RemoteException("Token d'authentification invalide");
-}
-```
-
-Cette séparation est importante pour la cohérence et la sécurité du système.
-
-## 7) Métier ticket
-
-Un ticket contient les informations suivantes :
-- identifiant,
-- titre,
-- catégorie,
-- description,
-- état,
-- date de création,
-- identifiant créateur.
+Un ticket contient :
+- `id`, `titre`, `categorie`, `description`,
+- `etat`, `dateCreation`, `dateAssignation`,
+- `idCreateur`, `idAgent`.
 
 Catégories autorisées :
 - `incident`
 - `demande`
 
-Validation de catégorie côté serveur :
+## 7) Dates et IDs
 
-```java
-private String normaliserCategorie(String categorie) {
-    if (categorie == null) {
-        return "incident";
-    }
-    String c = categorie.trim().toLowerCase();
-    if (!"incident".equals(c) && !"demande".equals(c)) {
-        return "incident";
-    }
-    return c;
-}
-```
+- ID ticket : format incrémental sur 10 chiffres (`0000000001`, ...).
+- `dateCreation` : `dd-MM-yyyy HH:mm:ss`.
+- `dateAssignation` : `dd-MM-yyyy HH:mm:ss`.
+- logs serveurs : `dd-MM-yyyy HH:mm:ss`.
 
 ## 8) Persistance JSON
 
-Les tickets sont persistés dans :
-`ho-commun/src/main/ressources/ho/bd/tickets.json`
+Fichiers de données :
+- `ho-commun/src/main/ressources/ho/bd/utilisateurs.json`
+- `ho-commun/src/main/ressources/ho/bd/tickets.json`
 
-Le serveur tickets :
-- charge le contenu JSON,
-- ajoute/modifie les entrées,
-- réécrit le fichier complet.
+La persistance est réalisée côté serveurs uniquement.
 
-Extrait d’écriture :
+## 9) Comportement client (console)
 
-```java
-Files.writeString(
-    chemin,
-    nouveauContenu.toString(),
-    StandardCharsets.UTF_8,
-    StandardOpenOption.CREATE,
-    StandardOpenOption.TRUNCATE_EXISTING
-);
-```
+### Utilisateur
+- se connecter,
+- créer un ticket,
+- lister ses tickets,
+- afficher le détail d'un ticket.
 
-Remarque : la persistance actuelle est fichier (pas base SQL), adaptée à une démonstration pédagogique.
+### Agent
+- lister ses tickets assignés,
+- afficher le détail d'un ticket assigné,
+- lister tous les tickets,
+- afficher le détail d'un ticket,
+- selon le contexte :
+  - prendre en charge un ticket non assigné,
+  - libérer un ticket assigné à lui-même.
 
-## 9) Génération des IDs et format des dates
+Dans le détail d'un ticket, le client affiche :
+- date de création,
+- date d'assignation,
+- nom du créateur,
+- nom de l'agent assigné.
 
-### ID ticket
-Format : 10 chiffres, incrémental.
-Exemples : `0000000001`, `0000000002`, `0000000003`.
+Les noms sont résolus via `AuthService.getNomUtilisateurParId(...)`.
 
-Principe simplifié :
+## 10) Règles de prise en charge / libération
 
-```java
-long prochain = dernierId + 1;
-String id = String.format("%010d", prochain);
-```
+### Prendre en charge
+- réservé au rôle `agent`,
+- refusé si le ticket est déjà assigné à un autre agent.
 
-### Dates
-- Ticket : `dd-MM-yyyy`
-- Logs serveur : `dd-MM-yyyy HH:mm:ss`
+### Libérer
+- réservé au rôle `agent`,
+- autorisé seulement si le ticket est assigné à l'agent connecté,
+- remet le ticket en `OPEN`, supprime `idAgent` et vide `dateAssignation`.
 
-Exemple :
+## 11) Procédure de lancement
 
-```java
-DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-String horodatage = LocalDateTime.now().format(fmt);
-```
+1. Compiler à la racine : `mvn clean install`
+2. Lancer `ServeurAuthLanceur`
+3. Lancer `ServeurTicketsLanceur`
+4. Lancer `ClientLanceur`
 
-## 10) Client console
+Si `ho-commun` est modifié, recompiler et relancer les modules concernés.
 
-Le client est conçu pour rester utilisable même si un serveur est temporairement indisponible.
+## 12) Limites actuelles
 
-Comportement important :
-- menu de connexion initial,
-- authentification avec 3 tentatives max,
-- appels au serveur tickets au moment des actions,
-- messages clairs si serveur injoignable.
-
-Extrait (création ticket) :
-
-```java
-System.out.print("Titre du ticket : ");
-String titre = scanner.nextLine();
-String categorie = demanderCategorie(scanner);
-System.out.print("Description du ticket : ");
-String description = scanner.nextLine();
-Ticket nouveauTicket = ticketsService.declarerTicket(token, titre, categorie, description);
-System.out.println("Ticket créé avec succès ! ID : " + nouveauTicket.getId());
-```
-
-Affichage liste tickets :
-
-```java
-System.out.println("- " + t.getId() + " " + t.getTitre() + " [" + t.getEtat() + "] : " + t.getDescription());
-```
-
-## 11) Logs et observabilité
-
-Le logging sert à expliquer “qui fait quoi” pendant la démo.
-
-Exemples de logs attendus :
-
-Auth :
-```text
-[24-02-2026 20:23:45] Tentative connexion login='user1'
-[24-02-2026 20:23:45] user1 - authentifie - token genere
-[24-02-2026 20:23:49] Verification token pour user1
-[24-02-2026 20:23:49] token valide
-```
-
-Tickets :
-```text
-[24-02-2026 20:23:50] user1 - declarerTicket titre='Mon ticket'
-[24-02-2026 20:23:50] Serveur Ticket verifie le token de user1 aupres du Serveur Auth
-[24-02-2026 20:23:50] user1 - token valide pour declarerTicket
-[24-02-2026 20:23:50] user1 - ticket cree id='0000000001' categorie='incident'
-```
-
-## 12) Procédure de lancement pour la présentation
-
-Ordre recommandé :
-
-1. Compiler toute la solution (racine) :
-   - `mvn install`
-2. Lancer `ServeurAuthLanceur`.
-3. Lancer `ServeurTicketsLanceur`.
-4. Lancer `ClientLanceur`.
-
-Si vous modifiez `ho-commun`, refaire un `mvn install` à la racine avant relance.
-
-## 13) Scénario de démonstration (métier)
-
-Scénario simple pour le professeur :
-
-1. Connexion utilisateur réussie.
-2. Création d’un ticket de catégorie `incident`.
-3. Affichage du message de succès avec ID.
-4. Listage des tickets avec format :
-   - `ID + titre + état + description`.
-5. Montrer dans les consoles serveur :
-   - validation token par auth,
-   - action métier exécutée côté tickets.
-
-Valeur métier démontrée :
-- traçabilité des demandes,
-- structuration incident/demande,
-- base exploitable pour workflow support.
-
-## 14) Limites actuelles et améliorations possibles
-
-Limites de la version actuelle :
-- persistance fichier JSON (mono-instance),
+- persistance JSON fichier (pas de base de données),
 - tokens en mémoire (perdus au redémarrage),
-- pas de gestion de rôles utilisateurs,
-- pas de workflow d’état avancé.
+- pas de workflow avancé de résolution (`IN_PROGRESS`, `CLOSED`, etc.),
+- pas d'historique détaillé des changements de ticket.
 
-Améliorations possibles :
-- base de données relationnelle,
-- persistance de session/token,
-- rôles (demandeur/technicien/admin),
-- états `IN_PROGRESS`, `RESOLVED`, `CLOSED`,
-- historisation et audit complet,
-- interface web/API REST en complément de RMI.
+## 13) Pistes d'amélioration
+
+- stockage en base relationnelle,
+- persistance des sessions/tokens,
+- historique d'actions ticket,
+- API REST complémentaire au client console,
+- tests automatisés plus poussés (intégration RMI + métier).
