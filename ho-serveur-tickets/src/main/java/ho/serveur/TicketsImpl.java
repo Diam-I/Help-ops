@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.rmi.registry.LocateRegistry;
@@ -841,4 +842,168 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
             throw new RemoteException("Erreur lors de la libération", e);
         }
     }
+
+    @Override
+    public boolean resoudreTicket(String token, String idTicket) throws RemoteException {
+        String role;
+        String idAgentConnecte;
+        try {
+            IAuthService authService = connecterAuthService();
+            role = authService.getRoleToken(token);
+            idAgentConnecte = authService.getIdUtilisateur(token);
+        } catch (Exception e) {
+            throw new RemoteException("Serveur d'authentification injoignable", e);
+        }
+        if (!"agent".equalsIgnoreCase(role)) {
+            log("Résolution refusée : rôle '" + role + "' ne permet pas cette action");
+            return false;
+        }
+        try {
+            String contenu = lireContenuTicketsJson();
+            List<String> objets = extraireObjetsJson(contenu);
+
+            for (String objet : objets) {
+                String id = lireChamp(objet, "id");
+                if (!id.equals(idTicket)) {
+                    continue;
+                }
+
+                String titre = lireChamp(objet, "titre");
+                String categorie = lireChamp(objet, "categorie");
+                String description = lireChamp(objet, "description");
+                String etat = lireChamp(objet, "etat");
+                String dateCreation = lireChamp(objet, "dateCreation");
+                String idCreateur = lireChamp(objet, "idCreateur");
+                String idAgentExistant = lireChamp(objet, "idAgent");
+
+                if (idAgentExistant == null || idAgentExistant.isBlank()) {
+                    throw new RemoteException("Ce ticket n'est pas assigné.");
+                }
+                if (!idAgentConnecte.equals(idAgentExistant)) {
+                    throw new RemoteException("Ce ticket est assigné à un autre agent (" + idAgentExistant + ").");
+                }
+                if (!etat.equalsIgnoreCase("ASSIGNED")) {
+                    throw new RemoteException("Ce ticket n'est pas assigné.");
+                }
+                else {
+                    Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, idAgentExistant);
+                    if (!dateCreation.isEmpty()) {
+                        ticket.setDateCreation(dateCreation);
+                    }   
+                    ticket.setEtat("RESOLVED");
+
+                    log("Ticket " + idTicket + " résolu par agent " + idAgentConnecte);
+                    // ajouter un message de resolution //
+                    String messageResolution ; 
+                    try (Scanner scanner = new Scanner(System.in)) {
+                        System.out.print("Entrez un message de résolution pour le ticket " + idTicket + " : ");
+                        messageResolution = scanner.nextLine();
+                    }
+                    ticket.setMessageResolution(messageResolution);
+                    // ajouter une date de résolution dans le ticket //
+                    ticket.setDateResolution(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")));
+                    sauvegarderTicket(ticket);  
+
+                    return true; 
+                }
+            }
+            
+        } catch (RemoteException e) {
+            throw e;
+        } catch (Exception e) {
+            log("Erreur lors de la résolution du ticket: " + e.getMessage());
+            throw new RemoteException("Erreur lors de la résolution", e);
+        }
+        return false;
+
+    }
+
+    @Override
+    public String afficherStatistiques(String token) throws RemoteException {
+        String role;
+        try {
+            IAuthService authService = connecterAuthService();
+            role = authService.getRoleToken(token);
+        } catch (Exception e) {
+            throw new RemoteException("Serveur d'authentification injoignable", e);
+        }
+        try {
+
+        String contenu = lireContenuTicketsJson();
+        List<String> objets = extraireObjetsJson(contenu);
+        
+        long totalTickets = objets.size(); 
+        long ticketsOuverts = 0 ; 
+        long ticketsAssignes = 0 ; 
+        long ticketsResolus = 0;
+        long totalDureeResolution = 0;
+        
+        java.util.Map<String, Integer> ticketsParAgentMap = new java.util.HashMap<>();
+        java.util.Set<String> joursActivite = new java.util.HashSet<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+
+        for (String objet : objets) {
+            String etat = lireChamp(objet, "etat");
+            String idAgent = lireChamp(objet, "idAgent");
+            String dateCreationStr = lireChamp(objet, "dateCreation");
+            String dateResolutionStr = lireChamp(objet, "dateResolution"); 
+
+            if ("OPEN".equalsIgnoreCase(etat)) ticketsOuverts++;
+            else if ("ASSIGNED".equalsIgnoreCase(etat)) ticketsAssignes++;
+            else if ("RESOLVED".equalsIgnoreCase(etat)) ticketsResolus++;
+
+            if (idAgent != null && !idAgent.isBlank()) {
+                ticketsParAgentMap.put(idAgent, ticketsParAgentMap.getOrDefault(idAgent, 0) + 1);
+            }
+
+            if ("RESOLVED".equalsIgnoreCase(etat) && !dateResolutionStr.isBlank()) {
+                LocalDateTime debut = LocalDateTime.parse(dateCreationStr, formatter);
+                LocalDateTime fin = LocalDateTime.parse(dateResolutionStr, formatter);
+                totalDureeResolution += java.time.Duration.between(debut, fin).toMinutes();
+            }
+
+            if (!dateCreationStr.isBlank()) {
+                joursActivite.add(dateCreationStr.split(" ")[0]);
+            }
+        }
+
+        double tempsMoyen;
+        if (ticketsResolus == 0) {
+            tempsMoyen = 0.0;
+        } else {
+            tempsMoyen = (double) totalDureeResolution / ticketsResolus;
+        }
+        int nbAgentsActifs = ticketsParAgentMap.size();
+        int nbJours;
+        if (joursActivite.isEmpty()) {
+            nbJours = 1;
+        } else {
+            nbJours = joursActivite.size();
+        }
+        double tauxPression;
+        if (nbAgentsActifs == 0) {
+            tauxPression = 0.0;
+        } else {
+            tauxPression = (double) totalTickets / (nbAgentsActifs * nbJours);
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== HELP'OPS : STATISTIQUES ===\n");
+        sb.append("Nombre total de tickets : ").append(totalTickets).append("\n");
+        sb.append("Tickets par état : OPEN (").append(ticketsOuverts)
+          .append("), ASSIGNED (").append(ticketsAssignes)
+          .append("), RESOLVED (").append(ticketsResolus).append(")\n");
+        sb.append("Temps moyen de résolution : ").append(String.format("%.2f", tempsMoyen)).append(" minutes\n");
+        sb.append("Nombre d'agents actifs : ").append(nbAgentsActifs).append("\n");
+        sb.append("Taux de pression (tickets/agent/jour) : ").append(String.format("%.2f", tauxPression)).append("\n");
+
+        return sb.toString();
+        } catch (RemoteException e) {
+            throw e;
+        } catch (Exception e) {
+            log("Erreur lors de l'affichage des details du ticket: " + e.getMessage());
+            throw new RemoteException("Erreur lors de l'affichage des détails", e);
+        }
+    }
+
+
 }

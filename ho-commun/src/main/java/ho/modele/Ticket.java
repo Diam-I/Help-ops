@@ -20,6 +20,8 @@ public class Ticket implements Serializable {
     private String dateCreation ; 
     private String idCreateur ; 
     private String dateAssignation ;
+    private String dateResolution ;
+    private String messageResolution ;
     private String idAgent ;
 
     /**
@@ -33,6 +35,7 @@ public class Ticket implements Serializable {
         * @param dateCreation date de création du ticket
         * @param etat état initial du ticket (OPEN, IN_PROGRESS, CLOSED)
         * @param dateAssignation date d'assignation du ticket à un agent
+        * @param dateResolution date de résolution du ticket
         * @param idAgent identifiant de l'agent assigné au ticket
     */
     public Ticket(String id, String titre, String categorie, String description, String idCreateur, String etat, String idAgent) {
@@ -76,6 +79,9 @@ public class Ticket implements Serializable {
     public void setDateAssignation(String dateAssignation) {
         this.dateAssignation = dateAssignation;
     }
+    public void setDateResolution(String dateResolution) {
+        this.dateResolution = dateResolution;
+    }
     public String getDateAssignation() {
         return dateAssignation;
     }
@@ -85,5 +91,10 @@ public class Ticket implements Serializable {
     public void setIdAgent(String idAgent) {
         this.idAgent = idAgent;
     }
-    
+    public void setMessageResolution(String messageResolution) {
+        this.messageResolution = messageResolution;
+    }
+    public String getMessageResolution() {
+        return messageResolution;
+    }
 }

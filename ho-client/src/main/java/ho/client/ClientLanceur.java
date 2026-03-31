@@ -84,7 +84,9 @@ public class ClientLanceur {
                 if (roleToken.equalsIgnoreCase("agent")) {
                     System.out.println("3. Lister les tickets à ma charge");
                     System.out.println("4. Afficher tous les tickets / Prendre en charge un ticket");
-                    System.out.println("5. Quitter");
+                    System.out.println("5. Resoudre un ticket");
+                    System.err.println("6. Afficher les statistiques"); 
+                    System.out.println("7. Quitter");
                 } else {
                     System.out.println("3. Quitter");
                 }
@@ -324,6 +326,20 @@ public class ClientLanceur {
                             }
                             break;
                         case "5":
+                            if (roleToken.equalsIgnoreCase("agent")) {
+                                System.out.print("Entrez l'ID du ticket à résoudre : ");
+                                String idTicket = scanner.nextLine().trim();
+                                boolean success = ticketsService.resoudreTicket(token, idTicket);
+                                if (success) {
+                                    System.out.println("Ticket ID '" + idTicket + "' résolu avec succès !");
+                                } else {
+                                    System.out.println("Échec de la résolution du ticket. Vérifiez l'ID et assurez-vous que le ticket est assigné à vous.");
+                                }
+                            } else {
+                                System.out.println("Choix invalide, veuillez réessayer.");
+                            }
+                            break;
+                        case "6":
                             if (roleToken.equalsIgnoreCase("agent")) {
                                 quitter = true;
                             } else {
