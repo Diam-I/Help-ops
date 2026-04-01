@@ -312,9 +312,22 @@ public class ClientLanceur {
                                                         String messageResolution = scanner.nextLine();
                                                         boolean success = ticketsService.resoudreTicket(token, selection.getId(), messageResolution);
                                                         if (success) {
-                                                            System.out.println("Ticket '" + selection.getTitre() + "' résolu avec succès !");
+                                                            System.out.println("Ticket '" + selection.getTitre() + "' résolu");
                                                         } else {
                                                             System.out.println("Échec de la résolution du ticket.");
+                                                        }
+                                                    }
+                                                } else {
+                                                    System.out.println("1. Prendre en charge ce ticket");
+                                                    System.out.println("2. Retour");
+                                                    System.out.print("Choix : ");
+                                                    String choixAction = scanner.nextLine().trim();
+                                                    if ("1".equals(choixAction)) {
+                                                        boolean success = ticketsService.prendreEnCharge(token, selection.getId());
+                                                        if (success) {
+                                                            System.out.println("Ticket '" + selection.getTitre() + "' pris en charge avec succès !");
+                                                        } else {
+                                                            System.out.println("Échec de la prise en charge du ticket.");
                                                         }
                                                     }
                                                 }

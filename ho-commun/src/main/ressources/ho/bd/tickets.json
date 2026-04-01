@@ -22,17 +22,7 @@
     "idAgent": "U003",
     "dateAssigntation": "27-02-2026 16:09:08"
   },
-  {
-    "id": "0000000004",
-    "titre": "PC Eteint",
-    "categorie": "incident",
-    "description": "Mon PC s eteint tout seul",
-    "etat": "OPEN",
-    "dateCreation": "24-02-2026 14:09:08",
-    "idCreateur": "U001",
-    "idAgent": null,
-    "dateAssigntation": null
-  },
+  {"id": "0000000004", "titre": "PC Eteint", "categorie": "incident", "description": "Mon PC s eteint tout seul", "etat": "ASSIGNED", "dateCreation": "24-02-2026 14:09:08", "dateAssignation": "01-04-2026 16:35:04", "dateResolution": "", "messageResolution": "", "idCreateur": "U001", "idAgent": "U004"},
   {
     "id": "0000000005",
     "titre": "Word qui ne fonctionne pas",
@@ -44,17 +34,7 @@
     "idAgent": null,
     "dateAssigntation": null
   },
-  {
-    "id": "0000000006",
-    "titre": "PC bug",
-    "categorie": "incident",
-    "description": "Mon PC bug sans raison",
-    "etat": "ASSIGNED",
-    "dateCreation": "25-02-2026 13:19:08",
-    "idCreateur": "U001",
-    "idAgent": "U003",
-    "dateAssigntation": "03-03-2026 13:14:08"
-  },
+  {"id": "0000000006", "titre": "PC bug", "categorie": "incident", "description": "Mon PC bug sans raison", "etat": "RESOLVED", "dateCreation": "25-02-2026 13:19:08", "dateAssignation": "", "dateResolution": "01-04-2026 15:15:10", "messageResolution": "J'ai fini", "idCreateur": "U001", "idAgent": "U003"},
   {
     "id": "0000000007",
     "titre": "Clavier",

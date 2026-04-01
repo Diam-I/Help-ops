@@ -465,7 +465,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         * @throws RemoteException en cas d'erreur d'écriture dans le fichier JSON
         * 
      */
-    private void sauvegarderTicket(Ticket nouveauTicket) throws RemoteException {
+    private synchronized void sauvegarderTicket(Ticket nouveauTicket) throws RemoteException {
         try {
             Path chemin = trouverCheminTicketsJson();
             Files.createDirectories(chemin.getParent());
@@ -757,6 +757,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
 
             log("Prise en charge acceptée pour rôle '" + role + "'");
             try {
+                synchronized (this) {
                 // Charger TOUS les tickets //
                 String contenu = lireContenuTicketsJson();
                 List<String> objets = extraireObjetsJson(contenu);
@@ -793,7 +794,8 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                 }
                 log("Ticket " + idTicket + " non trouvé");
                 return false;
-            } catch (Exception e) {
+            } 
+            }catch (Exception e) {
                 log("Erreur lors de la prise en charge du ticket: " + e.getMessage());
                 throw new RemoteException("Erreur lors de la prise en charge", e);
             }
@@ -944,97 +946,84 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
     @Override
     public String afficherStatistiques(String token) throws RemoteException {
         try {
+            String contenu = lireContenuTicketsJson();
+            List<String> objets = extraireObjetsJson(contenu);
+            
+            long totalTickets = objets.size();
+            long ticketsResolus = 0;
+            long ticketsOuverts = 0;
+            long ticketsAssignes = 0;
+            long totalDureeResolution = 0;
 
-        String contenu = lireContenuTicketsJson();
-        List<String> objets = extraireObjetsJson(contenu);
-        
-        long totalTickets = objets.size(); 
-        long ticketsOuverts = 0 ; 
-        long ticketsAssignes = 0 ; 
-        long ticketsResolus = 0;
-        long totalDureeResolution = 0;
-        
-        java.util.Map<String, Integer> ticketsParAgentMap = new java.util.HashMap<>();
-        java.util.Set<String> joursActivite = new java.util.HashSet<>();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+            java.util.Map<String, Integer> ticketsParAgent = new java.util.HashMap<>();
+            java.util.Set<String> joursUniques = new java.util.HashSet<>();
+            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+            for (String objet : objets) {
+                String etat = lireChamp(objet, "etat");
+                String idAgent = lireChamp(objet, "idAgent");
+                String dateCreation = lireChamp(objet, "dateCreation");
+                String dateResolution = lireChamp(objet, "dateResolution");
 
-        for (String objet : objets) {
-            String etat = lireChamp(objet, "etat");
-            String idAgent = lireChamp(objet, "idAgent");
-            String dateCreationStr = lireChamp(objet, "dateCreation");
-            String dateResolutionStr = lireChamp(objet, "dateResolution"); 
-
-            if ("OPEN".equalsIgnoreCase(etat)) ticketsOuverts++;
-            else if ("ASSIGNED".equalsIgnoreCase(etat)) ticketsAssignes++;
-            else if ("RESOLVED".equalsIgnoreCase(etat)) {
-                ticketsResolus++;
-                if (!dateResolutionStr.isBlank() && !dateCreationStr.isBlank()) {
-                    LocalDateTime debut = LocalDateTime.parse(dateCreationStr, formatter);
-                    LocalDateTime fin = LocalDateTime.parse(dateResolutionStr, formatter);
-                    totalDureeResolution += java.time.Duration.between(debut, fin).toMinutes();
-
-                }
+                if ("OPEN".equalsIgnoreCase(etat)) ticketsOuverts++;
+                else if ("ASSIGNED".equalsIgnoreCase(etat)) ticketsAssignes++;
+                else if ("RESOLVED".equalsIgnoreCase(etat)) {
+                    ticketsResolus++;
+                    if (!dateCreation.isBlank() && !dateResolution.isBlank()) {
+                        java.time.LocalDateTime debut = java.time.LocalDateTime.parse(dateCreation, formatter);
+                        java.time.LocalDateTime fin = java.time.LocalDateTime.parse(dateResolution, formatter);
+                        totalDureeResolution += java.time.temporal.ChronoUnit.HOURS.between(debut, fin); 
                 
+                    }
+                }
+                if (idAgent != null && !idAgent.isBlank()) {
+                    ticketsParAgent.put(idAgent, ticketsParAgent.getOrDefault(idAgent, 0) + 1);
+                }
 
+                if (!dateCreation.isBlank()) {
+                    joursUniques.add(dateCreation.split(" ")[0]);
+                }
             }
 
-
-            if (idAgent != null && !idAgent.isBlank()) {
-                ticketsParAgentMap.put(idAgent, ticketsParAgentMap.getOrDefault(idAgent, 0) + 1);
+            int nbJours ; 
+            double tempsMoyenGlobal ;
+            if (ticketsResolus == 0) {
+                tempsMoyenGlobal = 0;
             }
-            if (!dateCreationStr.isBlank()) {
-                joursActivite.add(dateCreationStr.split(" ")[0]);
+            else {
+                tempsMoyenGlobal = (double) totalDureeResolution / ticketsResolus;
+            }
+            if (joursUniques.isEmpty()) {
+                nbJours = 1;
+            }
+            else {
+                nbJours = joursUniques.size();
             }
 
-        }
+            StringBuilder sb = new StringBuilder();
+            sb.append("=== STATISTIQUES ===\n");
+            sb.append("Total tickets : ").append(totalTickets).append("\n");
+            sb.append("Par état : OPEN(").append(ticketsOuverts).append("), ASSIGNED(")
+            .append(ticketsAssignes).append("), RESOLVED(").append(ticketsResolus).append(")\n\n");
+            sb.append("Temps moyen de résolution : ").append(String.format("%.2f", tempsMoyenGlobal)).append(" heures\n\n");
+            sb.append("--- DÉTAIL PAR AGENT ---\n");
+            if (ticketsParAgent.isEmpty()) {
+                sb.append("Aucun agent n'a encore pris de ticket.\n");
+            } else {
+                for (String agentId : ticketsParAgent.keySet()) {
+                    int nbTickets = ticketsParAgent.get(agentId);
+                    double pressionAgent = (double) nbTickets / nbJours;
+                    sb.append("Agent ID: ").append(agentId)
+                    .append(" | Tickets: ").append(nbTickets)
+                    .append(" | Moyenne: ").append(String.format("%.2f", pressionAgent)).append(" tickets/jour\n");
+                }
+            }
 
-        double tempsMoyen;
-        if (ticketsResolus == 0) {
-            tempsMoyen = 0.0;
-        } else {
-            tempsMoyen = (double) totalDureeResolution / ticketsResolus;
-        }
-        int nbAgentsActifs = ticketsParAgentMap.size();
-        double ratioTicketsAgent ; 
-        if (nbAgentsActifs == 0) {
-            ratioTicketsAgent = 0.0;
-        } else {
-            ratioTicketsAgent = (double) totalTickets / nbAgentsActifs;
-        }
+            log("Statistiques générées.");
+            return sb.toString();
 
-        int nbJours ; 
-        if (joursActivite.isEmpty()) {
-            nbJours = 1;
-        } else {
-            nbJours = joursActivite.size();
-        }
-        double tauxPression;
-        if (nbAgentsActifs == 0) {
-            tauxPression = 0.0;
-        } else {
-            tauxPression = (double) totalTickets / (nbAgentsActifs * nbJours);
-        }
-        StringBuilder sb = new StringBuilder();
-        sb.append("=== STATISTIQUES  ===\n");
-        sb.append("1. Nombre total de tickets : ").append(totalTickets).append("\n");
-        sb.append("2. Tickets résolus : ").append(ticketsResolus).append("\n"); 
-        sb.append("3. Tickets par état : OPEN(").append(ticketsOuverts) 
-          .append("), ASSIGNED(").append(ticketsAssignes)
-          .append("), RESOLVED(").append(ticketsResolus).append(")\n");
-        sb.append("4. Temps moyen OPEN -> RESOLVED : ").append(String.format("%.2f", tempsMoyen)).append(" minutes\n");
-        sb.append("5. Tickets / Agent : ").append(String.format("%.2f", ratioTicketsAgent)).append("\n"); 
-        sb.append("6. Taux de pression (ticket/agent/jour) : ").append(String.format("%.2f", tauxPression)).append("\n"); 
-
-        log("Statistiques générées pour l'agent.");
-        return sb.toString();
-        
-        } catch (RemoteException e) {
-            throw e;
         } catch (Exception e) {
-            log("Erreur lors de l'affichage des details du ticket: " + e.getMessage());
-            throw new RemoteException("Erreur lors de l'affichage des détails", e);
+            throw new RemoteException("Erreur lors du calcul des statistiques", e);
         }
     }
-
 
 }
