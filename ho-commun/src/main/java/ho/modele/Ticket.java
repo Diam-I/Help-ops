@@ -82,6 +82,9 @@ public class Ticket implements Serializable {
     public void setDateResolution(String dateResolution) {
         this.dateResolution = dateResolution;
     }
+    public String getDateResolution() {
+        return dateResolution;
+    }
     public String getDateAssignation() {
         return dateAssignation;
     }

@@ -1,16 +1,5 @@
 [
-  {
-    "id": "0000000001",
-    "titre": "Premier ticket",
-    "categorie": "incident",
-    "description": "Je test la creation du ticket",
-    "etat": "ASSIGNED",
-    "dateCreation": "24-02-2026 23:09:08",
-    "dateAssignation": "10-03-2026 23:14:08",
-
-    "idCreateur": "U001",
-    "idAgent": "U003"
-  },
+  {"id": "0000000001", "titre": "Premier ticket", "categorie": "incident", "description": "Je test la creation du ticket", "etat": "RESOLVED", "dateCreation": "24-02-2026 23:09:08", "dateAssignation": "10-03-2026 23:14:08", "dateResolution": "01-04-2026 14:59:32", "messageResolution": "J'ai fini", "idCreateur": "U001", "idAgent": "U003"},
   {
     "id": "0000000002",
     "titre": "Mon premier ticket",

@@ -85,14 +85,15 @@ public interface ITicketsService extends Remote {
     boolean libererTicket(String token, String idTicket) throws RemoteException;
 
     /**
-     * Resoudre un ticket en le marquant comme résolu 
-     * 
+     * Resoudre un ticket en le marquant comme résolu.
+     *
      * @param token jeton d'authentification de l'agent
      * @param idTicket identifiant du ticket à résoudre
+     * @param messageResolution message saisi par l'agent pour expliquer la résolution
      * @return {@code true} si la résolution est réussie, {@code false} sinon
      * @throws RemoteException en cas d'erreur RMI
      */
-    boolean resoudreTicket(String token, String idTicket) throws RemoteException;
+    boolean resoudreTicket(String token, String idTicket, String messageResolution) throws RemoteException;
 
     /**
      * 

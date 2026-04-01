@@ -309,6 +309,8 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                     String etat = lireChamp(objet, "etat");
                     String dateCreation = lireChamp(objet, "dateCreation");
                     String dateAssignation = lireChamp(objet, "dateAssignation");
+                    String dateResolution = lireChamp(objet, "dateResolution");
+                    String messageResolution = lireChamp(objet, "messageResolution");
                     String idAgent = lireChamp(objet, "idAgent");
                     Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, idAgent);
                     if (!etat.isEmpty()) {
@@ -319,6 +321,12 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                     }
                     if (!dateAssignation.isEmpty()) {
                         ticket.setDateAssignation(dateAssignation);
+                    }
+                    if (!dateResolution.isEmpty()) {
+                        ticket.setDateResolution(dateResolution);
+                    }
+                    if (!messageResolution.isEmpty()) {
+                        ticket.setMessageResolution(messageResolution);
                     }
                     tickets.add(ticket);
                 }
@@ -362,6 +370,8 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                     String etat = lireChamp(objet, "etat");
                     String dateCreation = lireChamp(objet, "dateCreation");
                     String dateAssignation = lireChamp(objet, "dateAssignation");
+                    String dateResolution = lireChamp(objet, "dateResolution");
+                    String messageResolution = lireChamp(objet, "messageResolution");
 
                     Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, idAgent);
                     if (!etat.isEmpty()) {
@@ -372,6 +382,12 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                     }
                     if (!dateAssignation.isEmpty()) {
                         ticket.setDateAssignation(dateAssignation);
+                    }
+                    if (!dateResolution.isEmpty()) {
+                        ticket.setDateResolution(dateResolution);
+                    }
+                    if (!messageResolution.isEmpty()) {
+                        ticket.setMessageResolution(messageResolution);
                     }
                     tickets.add(ticket);
                 }
@@ -413,6 +429,8 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                 String etat = lireChamp(objet, "etat");
                 String dateCreation = lireChamp(objet, "dateCreation");
                 String dateAssignation = lireChamp(objet, "dateAssignation");
+                String dateResolution = lireChamp(objet, "dateResolution");
+                String messageResolution = lireChamp(objet, "messageResolution");
 
                 Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, idAgent);
                 if (!etat.isEmpty()) {
@@ -423,6 +441,12 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                 }
                 if (!dateAssignation.isEmpty()) {
                     ticket.setDateAssignation(dateAssignation);
+                }
+                if (!dateResolution.isEmpty()) {
+                    ticket.setDateResolution(dateResolution);
+                }
+                if (!messageResolution.isEmpty()) {
+                    ticket.setMessageResolution(messageResolution);
                 }
                 tickets.add(ticket);
             }
@@ -669,6 +693,8 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                 "\"etat\": \"" + echapper(ticket.getEtat()) + "\", " +
                 "\"dateCreation\": \"" + echapper(ticket.getDateCreation()) + "\", " +
                 "\"dateAssignation\": \"" + echapper(ticket.getDateAssignation()) + "\", " +
+            "\"dateResolution\": \"" + echapper(ticket.getDateResolution()) + "\", " +
+            "\"messageResolution\": \"" + echapper(ticket.getMessageResolution()) + "\", " +
                 "\"idCreateur\": \"" + echapper(ticket.getIdCreateur()) + "\", " +
                 "\"idAgent\": \"" + echapper(ticket.getIdAgent()) + "\"" +
                 "}";
@@ -844,7 +870,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
     }
 
     @Override
-    public boolean resoudreTicket(String token, String idTicket) throws RemoteException {
+    public boolean resoudreTicket(String token, String idTicket, String messageResolution) throws RemoteException {
         String role;
         String idAgentConnecte;
         try {
@@ -873,6 +899,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                 String description = lireChamp(objet, "description");
                 String etat = lireChamp(objet, "etat");
                 String dateCreation = lireChamp(objet, "dateCreation");
+                String dateAssignation = lireChamp(objet, "dateAssignation");
                 String idCreateur = lireChamp(objet, "idCreateur");
                 String idAgentExistant = lireChamp(objet, "idAgent");
 
@@ -889,18 +916,14 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                     Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, idAgentExistant);
                     if (!dateCreation.isEmpty()) {
                         ticket.setDateCreation(dateCreation);
-                    }   
+                    }
+                    if (!dateAssignation.isEmpty()) {
+                        ticket.setDateAssignation(dateAssignation);
+                    }
                     ticket.setEtat("RESOLVED");
 
                     log("Ticket " + idTicket + " résolu par agent " + idAgentConnecte);
-                    // ajouter un message de resolution //
-                    String messageResolution ; 
-                    try (Scanner scanner = new Scanner(System.in)) {
-                        System.out.print("Entrez un message de résolution pour le ticket " + idTicket + " : ");
-                        messageResolution = scanner.nextLine();
-                    }
-                    ticket.setMessageResolution(messageResolution);
-                    // ajouter une date de résolution dans le ticket //
+                    ticket.setMessageResolution(messageResolution == null ? "" : messageResolution.trim());
                     ticket.setDateResolution(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")));
                     sauvegarderTicket(ticket);  
 

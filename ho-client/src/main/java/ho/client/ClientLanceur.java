@@ -84,9 +84,8 @@ public class ClientLanceur {
                 if (roleToken.equalsIgnoreCase("agent")) {
                     System.out.println("3. Lister les tickets à ma charge");
                     System.out.println("4. Afficher tous les tickets / Prendre en charge un ticket");
-                    System.out.println("5. Resoudre un ticket");
-                    System.err.println("6. Afficher les statistiques"); 
-                    System.out.println("7. Quitter");
+                    System.err.println("5. Afficher les statistiques"); 
+                    System.out.println("6. Quitter");
                 } else {
                     System.out.println("3. Quitter");
                 }
@@ -210,7 +209,8 @@ public class ClientLanceur {
                                                         && !selection.getIdAgent().isBlank()
                                                         && selection.getIdAgent().equals(idAgentConnecte)) {
                                                     System.out.println("1. Libérer ce ticket");
-                                                    System.out.println("2. Retour");
+                                                    System.out.println("2. Résoudre ce ticket");
+                                                    System.out.println("3. Retour");
                                                     System.out.print("Choix : ");
                                                     String choixAction = scanner.nextLine().trim();
                                                     if ("1".equals(choixAction)) {
@@ -220,8 +220,16 @@ public class ClientLanceur {
                                                         } else {
                                                             System.out.println("Échec de la libération du ticket.");
                                                         }
-                                                    }
-                                                }
+                                                    } else if ("2".equals(choixAction)) {
+                                                        System.out.print("Entrez le message de résolution : ");
+                                                        String messageResolution = scanner.nextLine();
+                                                        boolean success = ticketsService.resoudreTicket(token, selection.getId(), messageResolution);
+                                                        if (success) {
+                                                            System.out.println("Ticket '" + selection.getTitre() + "' résolu avec succès !");
+                                                        } else {
+                                                            System.out.println("Échec de la résolution du ticket.");
+                                                        }
+                                                    }                                                 }
                                                 break;
                                             }
                                             System.out.println("Numéro invalide, veuillez réessayer.");
@@ -287,7 +295,8 @@ public class ClientLanceur {
 
                                                 if (assigneAAgentConnecte) {
                                                     System.out.println("1. Libérer ce ticket");
-                                                    System.out.println("2. Retour");
+                                                    System.out.println("2. Résoudre ce ticket");
+                                                    System.out.println("3. Retour");
                                                     System.out.print("Choix : ");
                                                     String choixAction = scanner.nextLine().trim();
                                                     if ("1".equals(choixAction)) {
@@ -298,18 +307,14 @@ public class ClientLanceur {
                                                             System.out.println("Échec de la libération du ticket.");
                                                         }
                                                     }
-                                                } else {
-                                                    System.out.println("1. Prendre en charge ce ticket");
-                                                    System.out.println("2. Retour");
-                                                    System.out.print("Choix : ");
-                                                    String choixAction = scanner.nextLine().trim();
-
-                                                    if ("1".equals(choixAction)) {
-                                                        boolean success = ticketsService.prendreEnCharge(token, selection.getId());
+                                                    else if ("2".equals(choixAction)) {
+                                                        System.out.print("Entrez le message de résolution : ");
+                                                        String messageResolution = scanner.nextLine();
+                                                        boolean success = ticketsService.resoudreTicket(token, selection.getId(), messageResolution);
                                                         if (success) {
-                                                            System.out.println("Ticket '" + selection.getTitre() + "' pris en charge avec succès !");
+                                                            System.out.println("Ticket '" + selection.getTitre() + "' résolu avec succès !");
                                                         } else {
-                                                            System.out.println("Échec de la prise en charge du ticket.");
+                                                            System.out.println("Échec de la résolution du ticket.");
                                                         }
                                                     }
                                                 }
@@ -325,21 +330,8 @@ public class ClientLanceur {
                                 System.out.println("Choix invalide, veuillez réessayer.");
                             }
                             break;
+                        
                         case "5":
-                            if (roleToken.equalsIgnoreCase("agent")) {
-                                System.out.print("Entrez l'ID du ticket à résoudre : ");
-                                String idTicket = scanner.nextLine().trim();
-                                boolean success = ticketsService.resoudreTicket(token, idTicket);
-                                if (success) {
-                                    System.out.println("Ticket ID '" + idTicket + "' résolu avec succès !");
-                                } else {
-                                    System.out.println("Échec de la résolution du ticket. Vérifiez l'ID et assurez-vous que le ticket est assigné à vous.");
-                                }
-                            } else {
-                                System.out.println("Choix invalide, veuillez réessayer.");
-                            }
-                            break;
-                        case "6":
                             if (roleToken.equalsIgnoreCase("agent")) {
                                 String statsResultat = ticketsService.afficherStatistiques(token);
                                 System.out.println(statsResultat);
@@ -347,7 +339,7 @@ public class ClientLanceur {
                                 System.out.println("Choix invalide, veuillez réessayer.");
                             }
                             break;
-                        case "7":
+                        case "6":
                             if (roleToken.equalsIgnoreCase("agent")) {
                                 quitter = true;
                             } else {
