@@ -100,5 +100,6 @@
     "dateAssignation": "11-03-2026 13:39:10",
     "idCreateur": "U003",
     "idAgent": ""
-  }
+  },
+  {"id": "0000000013", "titre": "AZEr", "categorie": "incident", "description": "AZERT", "etat": "RESOLVED", "dateCreation": "01-04-2026 18:16:48", "dateAssignation": "01-04-2026 18:17:05", "dateResolution": "01-04-2026 18:17:30", "messageResolution": "aazert", "idCreateur": "U003", "idAgent": "U003"}
 ]
