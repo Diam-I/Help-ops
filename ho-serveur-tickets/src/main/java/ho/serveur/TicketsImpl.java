@@ -920,13 +920,6 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
 
     @Override
     public String afficherStatistiques(String token) throws RemoteException {
-        String role;
-        try {
-            IAuthService authService = connecterAuthService();
-            role = authService.getRoleToken(token);
-        } catch (Exception e) {
-            throw new RemoteException("Serveur d'authentification injoignable", e);
-        }
         try {
 
         String contenu = lireContenuTicketsJson();
@@ -950,21 +943,26 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
 
             if ("OPEN".equalsIgnoreCase(etat)) ticketsOuverts++;
             else if ("ASSIGNED".equalsIgnoreCase(etat)) ticketsAssignes++;
-            else if ("RESOLVED".equalsIgnoreCase(etat)) ticketsResolus++;
+            else if ("RESOLVED".equalsIgnoreCase(etat)) {
+                ticketsResolus++;
+                if (!dateResolutionStr.isBlank() && !dateCreationStr.isBlank()) {
+                    LocalDateTime debut = LocalDateTime.parse(dateCreationStr, formatter);
+                    LocalDateTime fin = LocalDateTime.parse(dateResolutionStr, formatter);
+                    totalDureeResolution += java.time.Duration.between(debut, fin).toMinutes();
+
+                }
+                
+
+            }
+
 
             if (idAgent != null && !idAgent.isBlank()) {
                 ticketsParAgentMap.put(idAgent, ticketsParAgentMap.getOrDefault(idAgent, 0) + 1);
             }
-
-            if ("RESOLVED".equalsIgnoreCase(etat) && !dateResolutionStr.isBlank()) {
-                LocalDateTime debut = LocalDateTime.parse(dateCreationStr, formatter);
-                LocalDateTime fin = LocalDateTime.parse(dateResolutionStr, formatter);
-                totalDureeResolution += java.time.Duration.between(debut, fin).toMinutes();
-            }
-
             if (!dateCreationStr.isBlank()) {
                 joursActivite.add(dateCreationStr.split(" ")[0]);
             }
+
         }
 
         double tempsMoyen;
@@ -974,7 +972,14 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
             tempsMoyen = (double) totalDureeResolution / ticketsResolus;
         }
         int nbAgentsActifs = ticketsParAgentMap.size();
-        int nbJours;
+        double ratioTicketsAgent ; 
+        if (nbAgentsActifs == 0) {
+            ratioTicketsAgent = 0.0;
+        } else {
+            ratioTicketsAgent = (double) totalTickets / nbAgentsActifs;
+        }
+
+        int nbJours ; 
         if (joursActivite.isEmpty()) {
             nbJours = 1;
         } else {
@@ -987,16 +992,19 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
             tauxPression = (double) totalTickets / (nbAgentsActifs * nbJours);
         }
         StringBuilder sb = new StringBuilder();
-        sb.append("=== HELP'OPS : STATISTIQUES ===\n");
-        sb.append("Nombre total de tickets : ").append(totalTickets).append("\n");
-        sb.append("Tickets par état : OPEN (").append(ticketsOuverts)
-          .append("), ASSIGNED (").append(ticketsAssignes)
-          .append("), RESOLVED (").append(ticketsResolus).append(")\n");
-        sb.append("Temps moyen de résolution : ").append(String.format("%.2f", tempsMoyen)).append(" minutes\n");
-        sb.append("Nombre d'agents actifs : ").append(nbAgentsActifs).append("\n");
-        sb.append("Taux de pression (tickets/agent/jour) : ").append(String.format("%.2f", tauxPression)).append("\n");
+        sb.append("=== STATISTIQUES  ===\n");
+        sb.append("1. Nombre total de tickets : ").append(totalTickets).append("\n");
+        sb.append("2. Tickets résolus : ").append(ticketsResolus).append("\n"); 
+        sb.append("3. Tickets par état : OPEN(").append(ticketsOuverts) 
+          .append("), ASSIGNED(").append(ticketsAssignes)
+          .append("), RESOLVED(").append(ticketsResolus).append(")\n");
+        sb.append("4. Temps moyen OPEN -> RESOLVED : ").append(String.format("%.2f", tempsMoyen)).append(" minutes\n");
+        sb.append("5. Tickets / Agent : ").append(String.format("%.2f", ratioTicketsAgent)).append("\n"); 
+        sb.append("6. Taux de pression (ticket/agent/jour) : ").append(String.format("%.2f", tauxPression)).append("\n"); 
 
+        log("Statistiques générées pour l'agent.");
         return sb.toString();
+        
         } catch (RemoteException e) {
             throw e;
         } catch (Exception e) {

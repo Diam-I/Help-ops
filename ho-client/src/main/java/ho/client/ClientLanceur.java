@@ -341,6 +341,14 @@ public class ClientLanceur {
                             break;
                         case "6":
                             if (roleToken.equalsIgnoreCase("agent")) {
+                                String statsResultat = ticketsService.afficherStatistiques(token);
+                                System.out.println(statsResultat);
+                            } else {
+                                System.out.println("Choix invalide, veuillez réessayer.");
+                            }
+                            break;
+                        case "7":
+                            if (roleToken.equalsIgnoreCase("agent")) {
                                 quitter = true;
                             } else {
                                 System.out.println("Choix invalide, veuillez réessayer.");
