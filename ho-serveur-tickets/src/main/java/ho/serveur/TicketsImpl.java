@@ -954,6 +954,8 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
             long ticketsOuverts = 0;
             long ticketsAssignes = 0;
             long totalDureeResolution = 0;
+            long nbIncidents = 0;
+            long nbDemandes = 0;    
 
             java.util.Map<String, Integer> ticketsParAgent = new java.util.HashMap<>();
             java.util.Set<String> joursUniques = new java.util.HashSet<>();
@@ -963,7 +965,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                 String idAgent = lireChamp(objet, "idAgent");
                 String dateCreation = lireChamp(objet, "dateCreation");
                 String dateResolution = lireChamp(objet, "dateResolution");
-
+                String categorie = lireChamp(objet, "categorie");
                 if ("OPEN".equalsIgnoreCase(etat)) ticketsOuverts++;
                 else if ("ASSIGNED".equalsIgnoreCase(etat)) ticketsAssignes++;
                 else if ("RESOLVED".equalsIgnoreCase(etat)) {
@@ -981,6 +983,12 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
 
                 if (!dateCreation.isBlank()) {
                     joursUniques.add(dateCreation.split(" ")[0]);
+                }
+                if (categorie.contains("incident")) {
+                    nbIncidents++;
+                }
+                else if (categorie.contains("demande")) {
+                    nbDemandes++;
                 }
             }
 
@@ -1018,12 +1026,54 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                 }
             }
 
+            int nbAgents = ticketsParAgent.size();
+            double pressionGlobale ; 
+            if (nbAgents == 0) {
+                pressionGlobale = 0;
+            }
+            else {
+                pressionGlobale = (double) totalTickets / (nbAgents*nbJours);
+            }
+            sb.append("\nPression globale : ").append(String.format("%.2f", pressionGlobale)).append(" tickets/agent/jour\n");  
+
+            String idTopAgent = "inconnu";
+            int maxTickets = 0;
+            for (String agentId : ticketsParAgent.keySet()) {
+                int nbTickets = ticketsParAgent.get(agentId);
+                if (nbTickets > maxTickets) {
+                    maxTickets = nbTickets;
+                    idTopAgent = agentId;
+                }
+            }
+            String nomAgentTop = "aucun" ; 
+            if (!idTopAgent.equals("inconnu")) {
+                try {
+                    IAuthService authService = connecterAuthService();
+                    nomAgentTop = authService.getNomUtilisateurParId(idTopAgent);
+                    
+                } catch (Exception e) {
+                    nomAgentTop = idTopAgent;
+                }
+            }
+            sb.append("L'agent qui prend le plus de tickets : ").append(nomAgentTop).append(" (").append(maxTickets).append(" tickets)\n");
+
+            if (totalTickets > 0) {
+                double pourcentageIncidents = (double) nbIncidents / totalTickets * 100;
+                double pourcentageDemandes = (double) nbDemandes / totalTickets * 100;
+                sb.append("\nRépartition par catégorie :\n");
+                sb.append("Incidents : ").append(String.format("%.2f", pourcentageIncidents)).append("% (").append(nbIncidents).append(" tickets)\n");
+                sb.append("Demandes : ").append(String.format("%.2f", pourcentageDemandes)).append("% (").append(nbDemandes).append(" tickets)\n");
+            }
             log("Statistiques générées.");
+
+            
             return sb.toString();
 
         } catch (Exception e) {
             throw new RemoteException("Erreur lors du calcul des statistiques", e);
         }
     }
+
+    
 
 }

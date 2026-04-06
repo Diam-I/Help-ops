@@ -312,7 +312,22 @@ public class ClientLanceur {
                                                         String messageResolution = scanner.nextLine();
                                                         boolean success = ticketsService.resoudreTicket(token, selection.getId(), messageResolution);
                                                         if (success) {
-                                                            System.out.println("Ticket '" + selection.getTitre() + "' résolu");
+                                                            String dateResolution = selection.getDateResolution(); 
+                                                            if (dateResolution == null || dateResolution.isBlank()) {
+                                                                dateResolution = "Inconnue";
+                                                            }
+                                                            else {
+                                                                dateResolution = selection.getDateResolution();
+                                                            }
+                                                            System.out.println("Date de résolution : " + dateResolution);
+                                                            String message = selection.getMessageResolution(); 
+                                                            if (message == null || message.isBlank()) {
+                                                                message = "Aucun message de résolution fourni.";
+                                                            }
+                                                            else {
+                                                                System.out.println("Message de résolution : " + message);
+                                                            }
+                                                           
                                                         } else {
                                                             System.out.println("Échec de la résolution du ticket.");
                                                         }
