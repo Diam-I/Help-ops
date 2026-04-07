@@ -71,4 +71,6 @@ public interface IAuthService extends Remote {
      * @throws RemoteException en cas d'erreur de communication RMI
      */
     String getNomUtilisateurParId(String idUtilisateur) throws RemoteException;
+
+    boolean creerCompte(String login, String password, String nom, String role) throws RemoteException;
 }

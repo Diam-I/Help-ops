@@ -116,7 +116,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         Ticket ticket = new Ticket(id, titre, categorieFinale, description, utilisateurId, "OPEN", null);
         ticket.setDateAssignation(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")));
         sauvegarderTicket(ticket);
-        emettreEvenement("Nouveau Ticket : \nID du ticket " + id + ".\nTitre du ticket : " + titre + ".\n Categorie du ticket : " + categorieFinale + ".\nCreateur du ticket : " + utilisateurId);
+        emettreEvenement("\nNouveau Ticket : \nID du ticket " + id + ".\nTitre du ticket : " + titre + ".\nCategorie du ticket : " + categorieFinale + ".\nCreateur du ticket : " + utilisateurId);
         log(login + " - ticket cree id='" + id + "' categorie='" + categorieFinale + "'");
         return ticket;
     }
@@ -793,7 +793,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                         ticket.setIdAgent(idAgent);
                         ticket.setDateAssignation(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")));
                         sauvegarderTicket(ticket);
-                        emettreEvenement("Ticket :  " + id + " pris en charge par l'agent " + idAgent + ".");
+                        emettreEvenement("\nTicket :  " + id + " pris en charge par l'agent " + idAgent + ".");
                         log("Ticket " + idTicket + " pris en charge par agent " + idAgent);
                         return true;
                     }
@@ -863,6 +863,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                 ticket.setIdAgent(null);
                 ticket.setDateAssignation("");
                 sauvegarderTicket(ticket);
+                emettreEvenement("Ticket " + idTicket + " libere par " + idAgentExistant + ".");
                 log("Ticket " + idTicket + " libéré par agent " + idAgentConnecte);
                 return true;
             }
@@ -934,7 +935,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                     ticket.setMessageResolution(messageResolution == null ? "" : messageResolution.trim());
                     ticket.setDateResolution(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")));
                     sauvegarderTicket(ticket);  
-                    emettreEvenement("Ticket " + idTicket + " résolu par l'agent " + idAgentConnecte + ".\nMessage de résolution : " + messageResolution);
+                    emettreEvenement("\nTicket " + idTicket + " résolu par l'agent " + idAgentConnecte + ".\nMessage de résolution : " + messageResolution);
                     return true; 
                 }
             }

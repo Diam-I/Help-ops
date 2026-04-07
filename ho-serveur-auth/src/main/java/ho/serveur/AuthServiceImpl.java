@@ -403,4 +403,60 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
 
         return objets;
     }
+
+    public synchronized boolean creerCompte(String login, String password, String nom, String role) throws RemoteException {
+        if (login == null || password == null || nom == null || role == null) {
+            return false;
+        }
+        try {
+            Path chemin = Path.of("ho-commun/src/main/ressources/ho/bd/utilisateurs.json");
+            if (!Files.exists(chemin)) {
+                log("Erreur : Le fichier est introuvable au chemin fixe : " + chemin.toAbsolutePath());
+                return false;
+            }
+            if (chemin == null) {
+                log("Fichier utilisateurs.json introuvable pour creerCompte");
+                return false;
+            }
+            String contenu = Files.readString(chemin, StandardCharsets.UTF_8);
+            if (contenu.contains("\"login\": \"" + login + "\"")) {
+                // Login déjà utilisé //
+                log("Tentative de creer compte avec login existant: " + login);
+                return false; 
+
+            }
+            int prochinIndex = extraireObjetsJson(contenu).size() + 1;
+            String nouvelId = String.format("U%03d", prochinIndex); 
+            String nouvelUtilisateur = "  {\n" +
+                    "    \"idUtilisateur\": \"" + nouvelId + "\",\n" +
+                    "    \"login\": \"" + login + "\",\n" +
+                    "    \"password\": \"" + password + "\",\n" +
+                    "    \"nom\": \"" + nom + "\",\n" +
+                    "    \"role\": \"" + role.toLowerCase() + "\"\n" +
+                    "  }";
+            int dernierCrochet = contenu.lastIndexOf(']');
+            if (dernierCrochet == -1) return false;
+            String nouveauContenu;
+            if (contenu.contains("{")) {
+                nouveauContenu = contenu.substring(0, dernierCrochet).trim();
+                // Retirer la dernière virgule si elle existe pour éviter les erreurs de format
+                if (nouveauContenu.endsWith(",")) {
+                    nouveauContenu = nouveauContenu.substring(0, nouveauContenu.length() - 1);
+                }
+                nouveauContenu += ",\n" + nouvelUtilisateur + "\n]";
+            } else {
+                nouveauContenu = "[\n" + nouvelUtilisateur + "\n]";
+            }
+
+            Files.writeString(chemin, nouveauContenu, StandardCharsets.UTF_8);
+            log("Nouveau compte créé : " + login + " avec le rôle " + role);
+            return true;
+            
+        } catch (Exception e) {
+            log("Erreur pendant la creation du compte: " + e.getMessage());
+            e.printStackTrace();
+            throw new RemoteException("Impossible de creer le compte", e);
+        }
+    }
+    
 }

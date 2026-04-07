@@ -42,5 +42,19 @@
       "nom": "Ressources Humaines"
     },
     "role": "agent"
+  },
+  {
+    "idUtilisateur": "U005",
+    "login": "laxel",
+    "password": "Axel123",
+    "nom": "Luc Axel",
+    "role": "utilisateur"
+  },
+  {
+    "idUtilisateur": "U006",
+    "login": "rromain",
+    "password": "Romain123",
+    "nom": "Romain Romain",
+    "role": "agent"
   }
 ]

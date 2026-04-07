@@ -85,7 +85,8 @@ public class ClientLanceur {
                     System.out.println("3. Lister les tickets à ma charge");
                     System.out.println("4. Afficher tous les tickets / Prendre en charge un ticket");
                     System.err.println("5. Afficher les statistiques"); 
-                    System.out.println("6. Quitter");
+                    System.out.println("6. Créer un compte");
+                    System.out.println("7. Quitter");
                 } else {
                     System.out.println("3. Quitter");
                 }
@@ -368,6 +369,31 @@ public class ClientLanceur {
                             }
                             break;
                         case "6":
+                            if (roleToken.equalsIgnoreCase("agent")) {
+                                System.out.print("Login du nouvel utilisateur : ");
+                                String login = scanner.nextLine().trim();
+                                System.out.print("Mot de passe du nouvel utilisateur : ");
+                                String mdp = scanner.nextLine().trim();
+                                System.out.print("Rôle du nouvel utilisateur (utilisateur/agent) : ");
+                                String role = scanner.nextLine().trim().toLowerCase();
+                                if (!"utilisateur".equals(role) && !"agent".equals(role)) {
+                                    System.out.println("Rôle invalide. Le rôle doit être 'utilisateur' ou 'agent'.");
+                                    break;
+                                }
+                                System.out.print("Nom du nouvel utilisateur : ");
+                                String nom = scanner.nextLine().trim();
+                                IAuthService authService = (IAuthService) connecterAuthService();
+                                boolean creationSuccess = authService.creerCompte(login, mdp, nom, role);
+                                if (creationSuccess) {
+                                    System.out.println("Compte cree  pour '" + login + "' avec le rôle '" + role + "'.");
+                                } else {
+                                    System.out.println("Échec de la création du compte. Le login '" + login + "' est peut-être déjà utilisé.");
+                                }
+                            } else {
+                                System.out.println("Choix invalide, veuillez réessayer.");
+                            }
+                            break;
+                        case "7":
                             if (roleToken.equalsIgnoreCase("agent")) {
                                 quitter = true;
                             } else {
