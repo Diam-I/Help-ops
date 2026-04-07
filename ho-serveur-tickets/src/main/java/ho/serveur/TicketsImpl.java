@@ -10,6 +10,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -19,6 +20,7 @@ import java.rmi.registry.Registry;
 
 import ho.auth.IAuthService;
 import ho.modele.Ticket;
+import ho.supervision.ISupervisionClient;
 import ho.tickets.ITicketsService;
 
 /**
@@ -27,7 +29,9 @@ import ho.tickets.ITicketsService;
  * <p>Gère la création, la lecture et la persistance des tickets.</p>
  */
 public class TicketsImpl extends UnicastRemoteObject implements ITicketsService {
-
+    private List<ISupervisionClient> superviseurs = new ArrayList<>(); // la liste des clients qui sont en supprevision
+    private List <String> historique= new ArrayList<>(); // l'historique des actions pour le ratrapage
+     
     private static final DateTimeFormatter LOG_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
     protected TicketsImpl() throws RemoteException {
         super();
@@ -112,6 +116,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         Ticket ticket = new Ticket(id, titre, categorieFinale, description, utilisateurId, "OPEN", null);
         ticket.setDateAssignation(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")));
         sauvegarderTicket(ticket);
+        emettreEvenement("Nouveau Ticket : \nID du ticket " + id + ".\nTitre du ticket : " + titre + ".\n Categorie du ticket : " + categorieFinale + ".\nCreateur du ticket : " + utilisateurId);
         log(login + " - ticket cree id='" + id + "' categorie='" + categorieFinale + "'");
         return ticket;
     }
@@ -788,6 +793,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                         ticket.setIdAgent(idAgent);
                         ticket.setDateAssignation(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")));
                         sauvegarderTicket(ticket);
+                        emettreEvenement("Ticket :  " + id + " pris en charge par l'agent " + idAgent + ".");
                         log("Ticket " + idTicket + " pris en charge par agent " + idAgent);
                         return true;
                     }
@@ -928,7 +934,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                     ticket.setMessageResolution(messageResolution == null ? "" : messageResolution.trim());
                     ticket.setDateResolution(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")));
                     sauvegarderTicket(ticket);  
-
+                    emettreEvenement("Ticket " + idTicket + " résolu par l'agent " + idAgentConnecte + ".\nMessage de résolution : " + messageResolution);
                     return true; 
                 }
             }
@@ -1073,6 +1079,47 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
             throw new RemoteException("Erreur lors du calcul des statistiques", e);
         }
     }
+
+    @Override
+    public void sabonner(ISupervisionClient client, boolean rattrapage) throws RemoteException {
+        if (rattrapage){
+            for (String evenement : historique) {
+                try {
+                    client.notifierEvenement(evenement);
+                } catch (RemoteException e) {
+                    log("Erreur lors de la notification d'un événement en rattrapage: " + e.getMessage());
+                }
+            }
+        }
+        if (!superviseurs.contains(client)) {
+            superviseurs.add(client);
+            log("Nouveau superviseur abonné. Total superviseurs: " + superviseurs.size());
+        }
+    }
+
+    private void emettreEvenement(String message) {
+        String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+        String evenement = "[" + date + "] " + message;
+        historique.add(evenement);
+        
+        if (historique.size() > 20) {
+            historique.remove(0);
+        }
+        Iterator<ISupervisionClient> iterator = superviseurs.iterator();
+        while (iterator.hasNext()) {
+            // Creation d'une copie de l'evenement pour eviter les problemes de concurrence si la liste est modifiee pendant l'iteration //
+            ISupervisionClient client = iterator.next();
+            try {
+                client.notifierEvenement(evenement);
+            } catch (RemoteException e) {
+                log("Erreur lors de la notification d'un événement: " + e.getMessage());
+                iterator.remove();
+                log("Superviseur supprimé en raison d'une erreur de notification.");
+            }
+        }
+    }
+
+    
 
     
 

@@ -5,6 +5,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 import ho.modele.Ticket;
+import ho.supervision.ISupervisionClient;
 
 /**
  * Contrat du service de tickets exposé via RMI.
@@ -103,5 +104,6 @@ public interface ITicketsService extends Remote {
      * @return une chaîne de caractères contenant les statistiques
      */
     String afficherStatistiques(String token) throws RemoteException;
+    void sabonner(ISupervisionClient client, boolean rattrapage) throws RemoteException;
 
 }   
