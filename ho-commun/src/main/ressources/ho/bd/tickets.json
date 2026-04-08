@@ -13,7 +13,7 @@
     "dateAssigntation": "27-02-2026 16:09:08"
   },
   {"id": "0000000004", "titre": "PC Eteint", "categorie": "incident", "description": "Mon PC s eteint tout seul", "etat": "ASSIGNED", "dateCreation": "24-02-2026 14:09:08", "dateAssignation": "01-04-2026 16:35:04", "dateResolution": "", "messageResolution": "", "idCreateur": "U001", "idAgent": "U004"},
-  {"id": "0000000005", "titre": "Word qui ne fonctionne pas", "categorie": "incident", "description": "Mon Word ne fonctionne pas", "etat": "ASSIGNED", "dateCreation": "24-02-2026 15:19:08", "dateAssignation": "07-04-2026 15:43:19", "dateResolution": "", "messageResolution": "", "idCreateur": "U002", "idAgent": "U003"},
+  {"id": "0000000005", "titre": "Word qui ne fonctionne pas", "categorie": "incident", "description": "Mon Word ne fonctionne pas", "etat": "OPEN", "dateCreation": "24-02-2026 15:19:08", "dateAssignation": "", "dateResolution": "", "messageResolution": "", "idCreateur": "U002", "idAgent": ""},
   {"id": "0000000006", "titre": "PC bug", "categorie": "incident", "description": "Mon PC bug sans raison", "etat": "RESOLVED", "dateCreation": "25-02-2026 13:19:08", "dateAssignation": "", "dateResolution": "01-04-2026 15:15:10", "messageResolution": "J'ai fini", "idCreateur": "U001", "idAgent": "U003"},
   {
     "id": "0000000007",
@@ -26,17 +26,7 @@
     "idAgent": "U003",
     "dateAssigntation": "25-02-2026 14:19:08"
   },
-  {
-    "id": "0000000008",
-    "titre": "PFGHJKLM",
-    "categorie": "incident",
-    "description": "azertyu",
-    "etat": "OPEN",
-    "dateCreation": "25-02-2026 14:09:08",
-    "idCreateur": "U001",
-    "idAgent": null,
-    "dateAssigntation": null
-  },
+  {"id": "0000000008", "titre": "PFGHJKLM", "categorie": "incident", "description": "azertyu", "etat": "RESOLVED", "dateCreation": "25-02-2026 14:09:08", "dateAssignation": "07-04-2026 22:23:22", "dateResolution": "07-04-2026 22:24:14", "messageResolution": "azertyui", "idCreateur": "U001", "idAgent": "U003"},
   {
     "id": "0000000009",
     "titre": "PC ",
@@ -86,5 +76,7 @@
   {"id": "0000000015", "titre": "Test de Test", "categorie": "incident", "description": "tesssst", "etat": "OPEN", "dateCreation": "07-04-2026 15:31:51", "dateAssignation": "07-04-2026 15:31:51", "dateResolution": "", "messageResolution": "", "idCreateur": "U003", "idAgent": ""},
   {"id": "0000000016", "titre": "Test 10000", "categorie": "demande", "description": "Test de test de test", "etat": "OPEN", "dateCreation": "07-04-2026 15:33:39", "dateAssignation": "07-04-2026 15:33:39", "dateResolution": "", "messageResolution": "", "idCreateur": "U003", "idAgent": ""},
   {"id": "0000000017", "titre": "teeeeest", "categorie": "incident", "description": "Test Test Test ", "etat": "OPEN", "dateCreation": "07-04-2026 15:38:30", "dateAssignation": "07-04-2026 15:38:30", "dateResolution": "", "messageResolution": "", "idCreateur": "U003", "idAgent": ""},
-  {"id": "0000000018", "titre": "Test de res", "categorie": "demande", "description": "Test res ", "etat": "OPEN", "dateCreation": "07-04-2026 15:38:55", "dateAssignation": "07-04-2026 15:38:55", "dateResolution": "", "messageResolution": "", "idCreateur": "U003", "idAgent": ""}
+  {"id": "0000000018", "titre": "Test de res", "categorie": "demande", "description": "Test res ", "etat": "OPEN", "dateCreation": "07-04-2026 15:38:55", "dateAssignation": "07-04-2026 15:38:55", "dateResolution": "", "messageResolution": "", "idCreateur": "U003", "idAgent": ""},
+  {"id": "0000000019", "titre": "oiujf", "categorie": "incident", "description": "dfdf", "etat": "OPEN", "priorite": "HAUTE", "dateCreation": "07-04-2026 23:35:11", "dateAssignation": "07-04-2026 23:35:11", "dateResolution": "", "messageResolution": "", "idCreateur": "U003", "idAgent": ""},
+  {"id": "0000000020", "titre": "gfdrtfyguhijop", "categorie": "incident", "description": "poiuytrez", "etat": "OPEN", "priorite": "MOYENNE", "dateCreation": "07-04-2026 23:48:52", "dateAssignation": "07-04-2026 23:48:52", "dateResolution": "", "messageResolution": "", "idCreateur": "U003", "idAgent": ""}
 ]

@@ -5,6 +5,7 @@
 HELP'OPS est une application distribuée de gestion de tickets d'assistance basée sur Java RMI.
 
 Fonctionnalités principales :
+
 - authentification utilisateur,
 - création de tickets,
 - consultation des tickets,
@@ -23,7 +24,9 @@ Le projet est découpé en modules Maven :
 ## 3) Contrats RMI (résumé)
 
 ### `IAuthService`
+
 Principales opérations :
+
 - `login(login, password)`
 - `verifierToken(token)`
 - `getLoginByToken(token)`
@@ -33,7 +36,9 @@ Principales opérations :
 - `getNomUtilisateurParId(idUtilisateur)`
 
 ### `ITicketsService`
+
 Principales opérations :
+
 - `declarerTicket(...)`
 - `listerTickets(token)`
 - `listerTicketsAssignes(token)`
@@ -53,6 +58,7 @@ Conséquence : il faut démarrer Auth avant Tickets.
 ## 5) Authentification et identité
 
 Le serveur d'authentification est l'autorité centrale :
+
 - validation des identifiants,
 - génération des tokens (`TOKEN-{UUID}`),
 - validation de tokens pour les autres services,
@@ -63,11 +69,15 @@ Le client ne lit pas directement les JSON utilisateurs : il interroge `AuthServi
 ## 6) Métier ticket
 
 Un ticket contient :
+
 - `id`, `titre`, `categorie`, `description`,
-- `etat`, `dateCreation`, `dateAssignation`,
+- `etat`, `priorite`, `dateCreation`, `dateAssignation`,
 - `idCreateur`, `idAgent`.
 
+La priorité est définie uniquement lors de la création du ticket.
+
 Catégories autorisées :
+
 - `incident`
 - `demande`
 
@@ -81,6 +91,7 @@ Catégories autorisées :
 ## 8) Persistance JSON
 
 Fichiers de données :
+
 - `ho-commun/src/main/ressources/ho/bd/utilisateurs.json`
 - `ho-commun/src/main/ressources/ho/bd/tickets.json`
 
@@ -89,12 +100,15 @@ La persistance est réalisée côté serveurs uniquement.
 ## 9) Comportement client (console)
 
 ### Utilisateur
+
 - se connecter,
 - créer un ticket,
+- choisir la priorité du ticket (`BASSE`, `MOYENNE`, `HAUTE`),
 - lister ses tickets,
 - afficher le détail d'un ticket.
 
 ### Agent
+
 - lister ses tickets assignés,
 - afficher le détail d'un ticket assigné,
 - lister tous les tickets,
@@ -104,8 +118,10 @@ La persistance est réalisée côté serveurs uniquement.
   - libérer un ticket assigné à lui-même.
 
 Dans le détail d'un ticket, le client affiche :
+
 - date de création,
 - date d'assignation,
+- priorité,
 - nom du créateur,
 - nom de l'agent assigné.
 
@@ -114,10 +130,12 @@ Les noms sont résolus via `AuthService.getNomUtilisateurParId(...)`.
 ## 10) Règles de prise en charge / libération
 
 ### Prendre en charge
+
 - réservé au rôle `agent`,
 - refusé si le ticket est déjà assigné à un autre agent.
 
 ### Libérer
+
 - réservé au rôle `agent`,
 - autorisé seulement si le ticket est assigné à l'agent connecté,
 - remet le ticket en `OPEN`, supprime `idAgent` et vide `dateAssignation`.

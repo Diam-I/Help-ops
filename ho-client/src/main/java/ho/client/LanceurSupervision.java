@@ -15,7 +15,7 @@ public class LanceurSupervision extends UnicastRemoteObject implements ISupervis
 
     @Override
     public void notifierEvenement(String evenement) throws java.rmi.RemoteException {
-        System.out.println("Événement de supervision  : " + evenement);
+        System.out.println("Événement  : " + evenement);
     }
 
     public static void main(String[] args) {

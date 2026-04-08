@@ -58,10 +58,11 @@ public interface ITicketsService extends Remote {
      * @param titre titre du ticket
      * @param categorie catégorie métier (incident ou demande)
      * @param description description détaillée
+    * @param priorite priorité du ticket (BASSE, MOYENNE, HAUTE)
      * @return ticket créé
      * @throws RemoteException en cas d'erreur RMI
      */
-    Ticket declarerTicket(String token, String titre, String categorie, String description) throws RemoteException;
+    Ticket declarerTicket(String token, String titre, String categorie, String description, String priorite) throws RemoteException;
 
 
     /**

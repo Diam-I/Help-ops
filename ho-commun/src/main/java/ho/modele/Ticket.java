@@ -17,6 +17,7 @@ public class Ticket implements Serializable {
     private String categorie;
     private String description;
     private String etat;
+    private String priorite;
     private String dateCreation ; 
     private String idCreateur ; 
     private String dateAssignation ;
@@ -39,6 +40,10 @@ public class Ticket implements Serializable {
         * @param idAgent identifiant de l'agent assigné au ticket
     */
     public Ticket(String id, String titre, String categorie, String description, String idCreateur, String etat, String idAgent) {
+        this(id, titre, categorie, description, idCreateur, etat, idAgent, null);
+    }
+
+    public Ticket(String id, String titre, String categorie, String description, String idCreateur, String etat, String idAgent, String priorite) {
         this.id = id;
         this.titre = titre;
         this.categorie = categorie;
@@ -47,6 +52,7 @@ public class Ticket implements Serializable {
         this.idCreateur = idCreateur;
         this.etat = (etat == null || etat.isBlank()) ? "OPEN" : etat;
         this.idAgent = (idAgent == null || idAgent.isBlank()) ? null : idAgent;
+        this.priorite = priorite;
     }
 
     public String getId() {
@@ -66,6 +72,12 @@ public class Ticket implements Serializable {
     }
     public void setEtat(String etat) {
         this.etat = etat;
+    }
+    public String getPriorite() {
+        return priorite;
+    }
+    public void setPriorite(String priorite) {
+        this.priorite = priorite;
     }
     public String getDateCreation() {
         return dateCreation;

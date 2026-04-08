@@ -100,9 +100,10 @@ public class ClientLanceur {
                             System.out.print("Titre du ticket : ");
                             String titre = scanner.nextLine();
                             String categorie = demanderCategorie(scanner);
+                            String priorite = demanderPriorite(scanner);
                             System.out.print("Description du ticket : ");
                             String description = scanner.nextLine();
-                            Ticket nouveauTicket = ticketsService.declarerTicket(token, titre, categorie, description);
+                            Ticket nouveauTicket = ticketsService.declarerTicket(token, titre, categorie, description, priorite);
                             System.out.println("Ticket créé avec succès ! ID : " + nouveauTicket.getId());
                             break;
                         case "2":
@@ -114,7 +115,7 @@ public class ClientLanceur {
                                 System.out.println("Vos tickets :");
                                 for (int i = 0; i < tickets.size(); i++) {
                                     Ticket t = tickets.get(i);
-                                    System.out.println((i + 1) + ". [" + t.getEtat() + "] " + t.getTitre() + " (ID: " + t.getId() + ")");
+                                    System.out.println((i + 1) + ". [" + t.getEtat() + "] [Priorité: " + valeurOuDefaut(t.getPriorite()) + "] " + t.getTitre() + " (ID: " + t.getId() + ")");
                                 }
 
                                 while (true) {
@@ -141,6 +142,7 @@ public class ClientLanceur {
                                             System.out.println("Titre : " + selection.getTitre());
                                             System.out.println("Catégorie : " + selection.getCategorie());
                                             System.out.println("État : " + selection.getEtat());
+                                            System.out.println("Priorité : " + valeurOuDefaut(selection.getPriorite()));
                                             System.out.println("Date de création : " + selection.getDateCreation());
                                             String dateAssignation = selection.getDateAssignation();
                                             if (dateAssignation == null || dateAssignation.isBlank()) {
@@ -168,7 +170,7 @@ public class ClientLanceur {
                                     System.out.println("Tickets assignés :");
                                     for (int i = 0; i < ticketsAssignes.size(); i++) {
                                         Ticket t = ticketsAssignes.get(i);
-                                        System.out.println((i + 1) + ". [" + t.getEtat() + "] " + t.getTitre() + " (ID: " + t.getId() + ")");
+                                        System.out.println((i + 1) + ". [" + t.getEtat() + "] [Priorité: " + valeurOuDefaut(t.getPriorite()) + "] " + t.getTitre() + " (ID: " + t.getId() + ")");
                                     }
 
                                     while (true) {
@@ -196,6 +198,7 @@ public class ClientLanceur {
                                                 System.out.println("Titre : " + selection.getTitre());
                                                 System.out.println("Catégorie : " + selection.getCategorie());
                                                 System.out.println("État : " + selection.getEtat());
+                                                System.out.println("Priorité : " + valeurOuDefaut(selection.getPriorite()));
                                                 System.out.println("Date de création : " + selection.getDateCreation());
                                                 String dateAssignation = selection.getDateAssignation();
                                                 if (dateAssignation == null || dateAssignation.isBlank()) {
@@ -252,7 +255,7 @@ public class ClientLanceur {
                                     System.out.println("Tous les tickets :");
                                     for (int i = 0; i < tousLesTickets.size(); i++) {
                                         Ticket t = tousLesTickets.get(i);
-                                        System.out.println((i + 1) + ". [" + t.getEtat() + "] " + t.getTitre() + " (ID: " + t.getId() + ")");
+                                        System.out.println((i + 1) + ". [" + t.getEtat() + "] [Priorité: " + valeurOuDefaut(t.getPriorite()) + "] " + t.getTitre() + " (ID: " + t.getId() + ")");
                                     }
 
                                     while (true) {
@@ -280,6 +283,7 @@ public class ClientLanceur {
                                                 System.out.println("Titre : " + selection.getTitre());
                                                 System.out.println("Catégorie : " + selection.getCategorie());
                                                 System.out.println("État : " + selection.getEtat());
+                                                System.out.println("Priorité : " + valeurOuDefaut(selection.getPriorite()));
                                                 System.out.println("Date de création : " + selection.getDateCreation());
                                                 String dateAssignation = selection.getDateAssignation();
                                                 if (dateAssignation == null || dateAssignation.isBlank()) {
@@ -507,6 +511,36 @@ public class ClientLanceur {
     }
 
     /**
+        * Force le choix d'une priorité valide pour le ticket.
+        *
+        * @param scanner Scanner pour lire la saisie utilisateur
+        * @return "HAUTE", "MOYENNE" ou "BASSE"
+        *
+     */
+    private static String demanderPriorite(Scanner scanner) {
+        while (true) {
+            System.out.println("Priorité du ticket :");
+            System.out.println("1. Haute");
+            System.out.println("2. Moyenne");
+            System.out.println("3. Basse");
+            System.out.print("Choix : ");
+            String choix = scanner.nextLine().trim();
+
+            if ("1".equals(choix)) {
+                return "HAUTE";
+            }
+            if ("2".equals(choix)) {
+                return "MOYENNE";
+            }
+            if ("3".equals(choix)) {
+                return "BASSE";
+            }
+
+            System.out.println("Choix invalide, veuillez réessayer.");
+        }
+    }
+
+    /**
      * Résout le nom utilisateur via le service d'authentification à partir d'un identifiant.
      */
     private static String resoudreNomUtilisateur(IAuthService authService, String idUtilisateur) {
@@ -519,5 +553,12 @@ public class ClientLanceur {
         } catch (Exception e) {
             return "inconnu";
         }
+    }
+
+    private static String valeurOuDefaut(String valeur) {
+        if (valeur == null || valeur.isBlank()) {
+            return "Non définie";
+        }
+        return valeur;
     }
 }

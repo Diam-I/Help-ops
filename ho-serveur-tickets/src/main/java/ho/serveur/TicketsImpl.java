@@ -12,12 +12,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-
 import ho.auth.IAuthService;
 import ho.modele.Ticket;
 import ho.supervision.ISupervisionClient;
@@ -76,6 +74,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         System.out.println("Catégorie: " + ticket.getCategorie());
         System.out.println("Description: " + ticket.getDescription());
         System.out.println("Etat: " + ticket.getEtat());
+        System.out.println("Priorité: " + ticket.getPriorite());
         System.out.println("Date de création: " + ticket.getDateCreation());
         System.out.println("ID créateur: " + ticket.getIdCreateur());
     }
@@ -90,7 +89,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         * @return le ticket créé avec son identifiant généré
         * @throws RemoteException en cas d'erreur RMI ou de validation des données
     */
-    public Ticket declarerTicket(String token, String titre, String categorie, String description) throws RemoteException {
+    public Ticket declarerTicket(String token, String titre, String categorie, String description, String priorite) throws RemoteException {
         String login = recupererLogin(token);
         log(login + " - declarerTicket titre='" + titre + "'");
         if (!tokenValide(token)) {
@@ -113,7 +112,11 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
 
         String id = genererIdTicket();
         String categorieFinale = normaliserCategorie(categorie);
-        Ticket ticket = new Ticket(id, titre, categorieFinale, description, utilisateurId, "OPEN", null);
+        String prioriteFinale = normaliserPriorite(priorite);
+        if (prioriteFinale.isEmpty()) {
+            throw new RemoteException("Priorité invalide. Valeurs attendues : BASSE, MOYENNE, HAUTE");
+        }
+        Ticket ticket = new Ticket(id, titre, categorieFinale, description, utilisateurId, "OPEN", null, prioriteFinale);
         ticket.setDateAssignation(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")));
         sauvegarderTicket(ticket);
         emettreEvenement("\nNouveau Ticket : \nID du ticket " + id + ".\nTitre du ticket : " + titre + ".\nCategorie du ticket : " + categorieFinale + ".\nCreateur du ticket : " + utilisateurId);
@@ -285,6 +288,26 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
     }
 
     /**
+        * Normalise la priorité pour garantir les valeurs attendues.
+        *
+        * @param priorite priorité fournie par le client
+        * @return priorité normalisée (BASSE, MOYENNE, HAUTE) ou chaîne vide si invalide
+        *
+     */
+    private String normaliserPriorite(String priorite) {
+        if (priorite == null) {
+            return "";
+        }
+
+        String valeur = priorite.trim().toUpperCase();
+        if ("BASSE".equals(valeur) || "MOYENNE".equals(valeur) || "HAUTE".equals(valeur)) {
+            return valeur;
+        }
+
+        return "";
+    }
+
+    /**
         * Charge les tickets depuis le fichier JSON de persistance.
         * 
         * @param idConnecte identifiant de l'utilisateur connecté pour filtrer les tickets qui lui appartiennent
@@ -316,8 +339,9 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                     String dateAssignation = lireChamp(objet, "dateAssignation");
                     String dateResolution = lireChamp(objet, "dateResolution");
                     String messageResolution = lireChamp(objet, "messageResolution");
+                    String priorite = lireChamp(objet, "priorite");
                     String idAgent = lireChamp(objet, "idAgent");
-                    Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, idAgent);
+                    Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, idAgent, priorite);
                     if (!etat.isEmpty()) {
                         ticket.setEtat(etat);
                     }
@@ -377,8 +401,9 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                     String dateAssignation = lireChamp(objet, "dateAssignation");
                     String dateResolution = lireChamp(objet, "dateResolution");
                     String messageResolution = lireChamp(objet, "messageResolution");
+                    String priorite = lireChamp(objet, "priorite");
 
-                    Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, idAgent);
+                    Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, idAgent, priorite);
                     if (!etat.isEmpty()) {
                         ticket.setEtat(etat);
                     }
@@ -436,8 +461,9 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                 String dateAssignation = lireChamp(objet, "dateAssignation");
                 String dateResolution = lireChamp(objet, "dateResolution");
                 String messageResolution = lireChamp(objet, "messageResolution");
+                String priorite = lireChamp(objet, "priorite");
 
-                Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, idAgent);
+                Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, idAgent, priorite);
                 if (!etat.isEmpty()) {
                     ticket.setEtat(etat);
                 }
@@ -696,6 +722,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                 "\"categorie\": \"" + echapper(ticket.getCategorie()) + "\", " +
                 "\"description\": \"" + echapper(ticket.getDescription()) + "\", " +
                 "\"etat\": \"" + echapper(ticket.getEtat()) + "\", " +
+                "\"priorite\": \"" + echapper(ticket.getPriorite()) + "\", " +
                 "\"dateCreation\": \"" + echapper(ticket.getDateCreation()) + "\", " +
                 "\"dateAssignation\": \"" + echapper(ticket.getDateAssignation()) + "\", " +
             "\"dateResolution\": \"" + echapper(ticket.getDateResolution()) + "\", " +
@@ -722,7 +749,6 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                 .replace("\r", "")
                 .replace("\n", "\\n");
     }
-
 
     /**
      * Permet à un agent de prendre en charge un ticket en vérifiant son rôle et en mettant à jour le ticket avec l'ID de l'agent et la date d'assignation.
@@ -776,13 +802,14 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                         String etat = lireChamp(objet, "etat");
                         String dateCreation = lireChamp(objet, "dateCreation");
                         String idCreateur = lireChamp(objet, "idCreateur");
+                        String priorite = lireChamp(objet, "priorite");
                         String idAgentExistant = lireChamp(objet, "idAgent");
 
                         if (!idAgentExistant.isBlank() && !idAgent.equals(idAgentExistant)) {
                             throw new RemoteException("Ce ticket est déjà pris en charge par un autre agent (" + idAgentExistant + ").");
                         }
                         
-                        Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, idAgent);
+                        Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, idAgent, priorite);
                         if (!etat.isEmpty()) {
                             ticket.setEtat(etat);
                         }
@@ -845,6 +872,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                 String etat = lireChamp(objet, "etat");
                 String dateCreation = lireChamp(objet, "dateCreation");
                 String idCreateur = lireChamp(objet, "idCreateur");
+                String priorite = lireChamp(objet, "priorite");
                 String idAgentExistant = lireChamp(objet, "idAgent");
 
                 if (idAgentExistant == null || idAgentExistant.isBlank()) {
@@ -854,7 +882,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                     throw new RemoteException("Ce ticket est assigné à un autre agent (" + idAgentExistant + ").");
                 }
 
-                Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, null);
+                Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, null, priorite);
                 if (!dateCreation.isEmpty()) {
                     ticket.setDateCreation(dateCreation);
                 }
@@ -910,6 +938,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                 String dateCreation = lireChamp(objet, "dateCreation");
                 String dateAssignation = lireChamp(objet, "dateAssignation");
                 String idCreateur = lireChamp(objet, "idCreateur");
+                String priorite = lireChamp(objet, "priorite");
                 String idAgentExistant = lireChamp(objet, "idAgent");
 
                 if (idAgentExistant == null || idAgentExistant.isBlank()) {
@@ -922,7 +951,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                     throw new RemoteException("Ce ticket n'est pas assigné.");
                 }
                 else {
-                    Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, idAgentExistant);
+                    Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, idAgentExistant, priorite);
                     if (!dateCreation.isEmpty()) {
                         ticket.setDateCreation(dateCreation);
                     }
@@ -1024,10 +1053,29 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
             if (ticketsParAgent.isEmpty()) {
                 sb.append("Aucun agent n'a encore pris de ticket.\n");
             } else {
+                IAuthService authService = null;
+                try {
+                    authService = connecterAuthService();
+                } catch (Exception e) {
+                    authService = null;
+                }
+
                 for (String agentId : ticketsParAgent.keySet()) {
                     int nbTickets = ticketsParAgent.get(agentId);
                     double pressionAgent = (double) nbTickets / nbJours;
-                    sb.append("Agent ID: ").append(agentId)
+                    String libelleAgent = agentId;
+                    if (authService != null) {
+                        try {
+                            String nomAgent = authService.getNomUtilisateurParId(agentId);
+                            if (nomAgent != null && !nomAgent.isBlank() && !"inconnu".equalsIgnoreCase(nomAgent)) {
+                                libelleAgent = nomAgent;
+                            }
+                        } catch (Exception e) {
+                            libelleAgent = agentId;
+                        }
+                    }
+
+                    sb.append("Agent: ").append(libelleAgent)
                     .append(" | Tickets: ").append(nbTickets)
                     .append(" | Moyenne: ").append(String.format("%.2f", pressionAgent)).append(" tickets/jour\n");
                 }
@@ -1119,9 +1167,5 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
             }
         }
     }
-
-    
-
-    
 
 }

@@ -56,5 +56,12 @@
     "password": "Romain123",
     "nom": "Romain Romain",
     "role": "agent"
+  },
+  {
+    "idUtilisateur": "U007",
+    "login": "rtyu",
+    "password": "rtyuio",
+    "nom": "azertyu",
+    "role": "agent"
   }
 ]
