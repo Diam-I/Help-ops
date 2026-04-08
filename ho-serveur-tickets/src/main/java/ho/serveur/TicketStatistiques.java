@@ -25,6 +25,12 @@ public final class TicketStatistiques {
         IAuthService get() throws Exception;
     }
 
+    /**
+     * Genere un rapport de statistiques a partir de la liste des objets tickets.
+     * @param objets
+     * @param authProvider
+     * @return
+     */
     public static String generer(List<String> objets, AuthServiceProvider authProvider) {
         long totalTickets = objets.size();
         long ticketsResolus = 0;

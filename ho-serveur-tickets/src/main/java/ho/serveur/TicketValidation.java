@@ -7,6 +7,10 @@ public final class TicketValidation {
     private TicketValidation() {
     }
 
+    /**
+     * Normalise la categorie d'un ticket. 
+     * @return
+     */
     public static String normaliserCategorie(String categorie) {
         if (categorie == null) {
             return "incident";
@@ -20,6 +24,11 @@ public final class TicketValidation {
         return "incident";
     }
 
+    /**
+     * Normalise la priorite d'un ticket.
+     * @param priorite
+     * @return
+     */
     public static String normaliserPriorite(String priorite) {
         if (priorite == null) {
             return "";

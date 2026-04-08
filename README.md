@@ -1,165 +1,93 @@
 # Projet HELP'OPS
 
-## 1) Objectif
+Application de gestion de tickets en Java RMI, avec un client console, un serveur d'authentification et un serveur de tickets.
 
-HELP'OPS est une application distribuée de gestion de tickets d'assistance basée sur Java RMI.
+## Objectif
 
-Fonctionnalités principales :
+Permettre a des utilisateurs de creer et suivre des tickets, et a des agents de traiter ces tickets.
 
-- authentification utilisateur,
-- création de tickets,
-- consultation des tickets,
-- prise en charge des tickets par les agents,
-- libération d'un ticket par l'agent qui en est responsable.
 
-## 2) Architecture
+## Modules
 
-Le projet est découpé en modules Maven :
+- ho-commun : interfaces RMI et modele Ticket partages
+- ho-serveur-auth : authentification, tokens, roles, informations utilisateur
+- ho-serveur-tickets : gestion des tickets, persistance JSON, supervision
+- ho-client : client console utilisateur/agent et client supervision
 
-- `ho-commun` : contrats RMI + modèle métier partagé (`Ticket`).
-- `ho-serveur-auth` : authentification, tokens, résolution des identités utilisateur.
-- `ho-serveur-tickets` : logique métier des tickets + persistance JSON.
-- `ho-client` : interface console.
+## Fonctionnalites principales
 
-## 3) Contrats RMI (résumé)
+### Cote utilisateur
 
-### `IAuthService`
+- connexion
+- creation de ticket (categorie + priorite)
+- consultation de ses tickets
+- affichage du detail d'un ticket
 
-Principales opérations :
+### Cote agent
 
-- `login(login, password)`
-- `verifierToken(token)`
-- `getLoginByToken(token)`
-- `getIdUtilisateur(token)`
-- `getRoleToken(token)`
-- `getNomByToken(token)`
-- `getNomUtilisateurParId(idUtilisateur)`
+- lister les tickets assignes
+- lister tous les tickets
+- prendre en charge un ticket
+- liberer un ticket
+- resoudre un ticket avec message
+- afficher les statistiques
+- creer un compte utilisateur
 
-### `ITicketsService`
+### Supervision
 
-Principales opérations :
+- abonnement a un flux d'evenements du serveur tickets
+- mode rattrapage (reception des derniers evenements) ou mode temps reel
 
-- `declarerTicket(...)`
-- `listerTickets(token)`
-- `listerTicketsAssignes(token)`
-- `listerTousTickets(token)`
-- `prendreEnCharge(token, idTicket)`
-- `libererTicket(token, idTicket)`
+## Contrats RMI (resume)
 
-## 4) Registre RMI
+### IAuthService
 
-Règle projet : seul le serveur d'authentification crée le registre RMI.
+- login(login, password)
+- verifierToken(token)
+- getLoginByToken(token)
+- getNomByToken(token)
+- getIdUtilisateur(token)
+- getRoleToken(token)
+- getNomUtilisateurParId(idUtilisateur)
+- creerCompte(login, password, nom, role)
 
-- `ServeurAuthLanceur` : crée le registre sur `1099` si absent, puis publie `AuthService`.
-- `ServeurTicketsLanceur` : ne crée pas le registre, il se connecte à un registre existant puis publie `TicketsService`.
+### ITicketsService
 
-Conséquence : il faut démarrer Auth avant Tickets.
+- getTicket(token, id)
+- declarerTicket(token, titre, categorie, description, priorite)
+- listerTickets(token)
+- listerTicketsAssignes(token)
+- listerTousTickets(token)
+- prendreEnCharge(token, idTicket)
+- libererTicket(token, idTicket)
+- resoudreTicket(token, idTicket, messageResolution)
+- afficherStatistiques(token)
+- sabonner(client, rattrapage)
 
-## 5) Authentification et identité
+## Donnees et formats
 
-Le serveur d'authentification est l'autorité centrale :
+- Fichiers JSON :
+  - ho-commun/src/main/ressources/ho/bd/utilisateurs.json
+  - ho-commun/src/main/ressources/ho/bd/tickets.json
+- ID ticket : incrementale sur 10 chiffres (ex: 0000000001)
+- Format date : dd-MM-yyyy HH:mm:ss
+- Categories : incident, demande
+- Priorites : BASSE, MOYENNE, HAUTE
 
-- validation des identifiants,
-- génération des tokens (`TOKEN-{UUID}`),
-- validation de tokens pour les autres services,
-- résolution des informations utilisateur (id, rôle, nom).
+## Registre RMI
 
-Le client ne lit pas directement les JSON utilisateurs : il interroge `AuthService`.
+- Le serveur Auth doit etre lance en premier (il initialise le registre sur le port 1099)
+- Le serveur Tickets se connecte ensuite au registre existant
 
-## 6) Métier ticket
+## Lancement rapide
 
-Un ticket contient :
+1. A la racine du projet : mvn clean install
+2. Lancer ho.serveur.ServeurAuthLanceur
+3. Lancer ho.serveur.ServeurTicketsLanceur
+4. Lancer ho.client.ClientLanceur
+5. Optionnel : lancer ho.client.LanceurSupervision
 
-- `id`, `titre`, `categorie`, `description`,
-- `etat`, `priorite`, `dateCreation`, `dateAssignation`,
-- `idCreateur`, `idAgent`.
+## Limites actuelles
 
-La priorité est définie uniquement lors de la création du ticket.
-
-Catégories autorisées :
-
-- `incident`
-- `demande`
-
-## 7) Dates et IDs
-
-- ID ticket : format incrémental sur 10 chiffres (`0000000001`, ...).
-- `dateCreation` : `dd-MM-yyyy HH:mm:ss`.
-- `dateAssignation` : `dd-MM-yyyy HH:mm:ss`.
-- logs serveurs : `dd-MM-yyyy HH:mm:ss`.
-
-## 8) Persistance JSON
-
-Fichiers de données :
-
-- `ho-commun/src/main/ressources/ho/bd/utilisateurs.json`
-- `ho-commun/src/main/ressources/ho/bd/tickets.json`
-
-La persistance est réalisée côté serveurs uniquement.
-
-## 9) Comportement client (console)
-
-### Utilisateur
-
-- se connecter,
-- créer un ticket,
-- choisir la priorité du ticket (`BASSE`, `MOYENNE`, `HAUTE`),
-- lister ses tickets,
-- afficher le détail d'un ticket.
-
-### Agent
-
-- lister ses tickets assignés,
-- afficher le détail d'un ticket assigné,
-- lister tous les tickets,
-- afficher le détail d'un ticket,
-- selon le contexte :
-  - prendre en charge un ticket non assigné,
-  - libérer un ticket assigné à lui-même.
-
-Dans le détail d'un ticket, le client affiche :
-
-- date de création,
-- date d'assignation,
-- priorité,
-- nom du créateur,
-- nom de l'agent assigné.
-
-Les noms sont résolus via `AuthService.getNomUtilisateurParId(...)`.
-
-## 10) Règles de prise en charge / libération
-
-### Prendre en charge
-
-- réservé au rôle `agent`,
-- refusé si le ticket est déjà assigné à un autre agent.
-
-### Libérer
-
-- réservé au rôle `agent`,
-- autorisé seulement si le ticket est assigné à l'agent connecté,
-- remet le ticket en `OPEN`, supprime `idAgent` et vide `dateAssignation`.
-
-## 11) Procédure de lancement
-
-1. Compiler à la racine : `mvn clean install`
-2. Lancer `ServeurAuthLanceur`
-3. Lancer `ServeurTicketsLanceur`
-4. Lancer `ClientLanceur`
-
-Si `ho-commun` est modifié, recompiler et relancer les modules concernés.
-
-## 12) Limites actuelles
-
-- persistance JSON fichier (pas de base de données),
-- tokens en mémoire (perdus au redémarrage),
-- pas de workflow avancé de résolution (`IN_PROGRESS`, `CLOSED`, etc.),
-- pas d'historique détaillé des changements de ticket.
-
-## 13) Pistes d'amélioration
-
-- stockage en base relationnelle,
-- persistance des sessions/tokens,
-- historique d'actions ticket,
-- API REST complémentaire au client console,
-- tests automatisés plus poussés (intégration RMI + métier).
+- Persistance fichier JSON (pas de base de donnees)
+- Tokens en memoire (perdus au redemarrage)

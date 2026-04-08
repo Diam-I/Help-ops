@@ -77,5 +77,12 @@
     "password": "Iko123",
     "nom": "Kiko Iko",
     "role": "agent"
+  },
+  {
+    "idUtilisateur": "U010",
+    "login": "Axixo",
+    "password": "Axi123",
+    "nom": "Axio Axio",
+    "role": "agent"
   }
 ]

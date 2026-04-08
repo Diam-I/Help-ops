@@ -14,6 +14,11 @@ public final class TicketJson {
     private TicketJson() {
     }
 
+    /**
+     * Extrait les objets JSON individuels d'une chaîne JSON representant une liste de tickets.
+     * @param json
+     * @return
+     */
     public static List<String> extraireObjetsJson(String json) {
         List<String> objets = new ArrayList<>();
         if (json == null || json.isBlank()) {
@@ -42,6 +47,12 @@ public final class TicketJson {
         return objets;
     }
 
+    /**
+     * Lit la valeur d'un champ specifique dans un objet JSON representant un ticket.
+     * @param objetJson
+     * @param champ
+     * @return
+     */
     public static String lireChamp(String objetJson, String champ) {
         Pattern pattern = Pattern.compile("\\\"" + Pattern.quote(champ) + "\\\"\\s*:\\s*\\\"([^\\\"]*)\\\"");
         Matcher matcher = pattern.matcher(objetJson);
@@ -51,6 +62,11 @@ public final class TicketJson {
         return "";
     }
 
+    /**
+     * Construit un objet Ticket a partir d'une chaîne JSON representant un ticket.
+     * @param objet
+     * @return
+     */
     public static Ticket construireTicketDepuisObjetJson(String objet) {
         String id = lireChamp(objet, "id");
         String titre = lireChamp(objet, "titre");
@@ -84,6 +100,10 @@ public final class TicketJson {
         return ticket;
     }
 
+    /** 
+     * Convertit un objet Ticket en une chaîne JSON representant ce ticket.
+     * @param ticket
+     */
     public static String ticketVersJson(Ticket ticket) {
         return "{" +
                 "\"id\": \"" + echapper(ticket.getId()) + "\", " +
@@ -101,6 +121,11 @@ public final class TicketJson {
                 "}";
     }
 
+    /**
+     * Echappe les caracteres speciaux dans une valeur de champ pour la rendre compatible avec JSON.
+     * @param valeur
+     * @return
+     */
     private static String echapper(String valeur) {
         if (valeur == null) {
             return "";
