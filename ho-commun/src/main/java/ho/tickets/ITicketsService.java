@@ -15,7 +15,7 @@ import ho.supervision.ISupervisionClient;
 public interface ITicketsService extends Remote {
 
     /**
-        * Récupère un ticket précis à partir de son identifiant.
+        * Recupere un ticket precis à partir de son identifiant.
      *
      * @param token jeton d'authentification
      * @param id identifiant du ticket
@@ -25,7 +25,7 @@ public interface ITicketsService extends Remote {
     Ticket getTicket(String token, String id) throws RemoteException;
 
     /**
-        * Liste les tickets de l'utilisateur authentifié.
+        * Liste les tickets de l'utilisateur authentifie.
      *
      * @param token jeton d'authentification
      * @return liste des tickets
@@ -34,7 +34,7 @@ public interface ITicketsService extends Remote {
     List<Ticket> listerTickets(String token) throws RemoteException;
 
     /**
-     * Liste les tickets assignés à l'agent authentifié.
+     * Liste les tickets assignes à l'agent authentifie.
      *
      * @param token jeton d'authentification
      * @return liste des tickets assignés à l'agent
@@ -52,7 +52,7 @@ public interface ITicketsService extends Remote {
     List<Ticket> listerTousTickets(String token) throws RemoteException;
 
     /**
-        * Crée un nouveau ticket à partir des informations du client.
+        * Cree un nouveau ticket a partir des informations du client.
      *
      * @param token jeton d'authentification
      * @param titre titre du ticket
@@ -77,7 +77,7 @@ public interface ITicketsService extends Remote {
     boolean prendreEnCharge(String token, String idTicket) throws RemoteException;
 
     /**
-     * Libère un ticket déjà assigné à l'agent connecté.
+     * Libèree un ticket deja assigne a l'agent connecte.
      *
      * @param token jeton d'authentification de l'agent
      * @param idTicket identifiant du ticket à libérer
@@ -87,11 +87,11 @@ public interface ITicketsService extends Remote {
     boolean libererTicket(String token, String idTicket) throws RemoteException;
 
     /**
-     * Resoudre un ticket en le marquant comme résolu.
+     * Resoudre un ticket en le marquant comme resolu.
      *
      * @param token jeton d'authentification de l'agent
-     * @param idTicket identifiant du ticket à résoudre
-     * @param messageResolution message saisi par l'agent pour expliquer la résolution
+     * @param idTicket identifiant du ticket a resoudre
+     * @param messageResolution message saisi par l'agent pour expliquer la resolution
      * @return {@code true} si la résolution est réussie, {@code false} sinon
      * @throws RemoteException en cas d'erreur RMI
      */

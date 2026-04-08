@@ -11,7 +11,6 @@ import java.time.format.DateTimeFormatter;
  */
 public class Ticket implements Serializable {
     private static final long serialVersionUID = 1L;
-    
     private String id;
     private String titre;
     private String categorie;
@@ -43,6 +42,7 @@ public class Ticket implements Serializable {
         this(id, titre, categorie, description, idCreateur, etat, idAgent, null);
     }
 
+    /* Constructeur */
     public Ticket(String id, String titre, String categorie, String description, String idCreateur, String etat, String idAgent, String priorite) {
         this.id = id;
         this.titre = titre;
@@ -54,7 +54,7 @@ public class Ticket implements Serializable {
         this.idAgent = (idAgent == null || idAgent.isBlank()) ? null : idAgent;
         this.priorite = priorite;
     }
-
+    /* Getters et Setters */
     public String getId() {
         return id;
     }

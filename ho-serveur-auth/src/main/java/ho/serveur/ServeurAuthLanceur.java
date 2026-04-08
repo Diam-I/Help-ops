@@ -6,15 +6,15 @@ import java.rmi.registry.Registry;
 import ho.auth.IAuthService;
 
 /**
- * Point d'entrée du serveur d'authentification RMI.
+ * Point d'entree du serveur d'authentification RMI.
  *
- * <p>Publie le service `AuthService` dans le registre RMI.</p>
+ * Publie le service `AuthService` dans le registre RMI.
  */
 public class ServeurAuthLanceur {
     /**
-     * Démarre le registre RMI et publie le service d'authentification.
+     * Demarre le registre RMI et publie le service d'authentification.
      *
-     * @param args arguments de ligne de commande (non utilisés)
+     * @param args arguments de ligne de commande (non utilises)
      */
     public static void main(String[] args) {
         try {
@@ -24,7 +24,8 @@ public class ServeurAuthLanceur {
             Registry reg;
             try {
                 reg = LocateRegistry.getRegistry(1099);
-                reg.list(); // Teste si le registre répond vraiment
+                // Teste si le registre répond vraiment // 
+                reg.list(); 
                 System.out.println(">>> Registre RMI existant trouvé.");
             } catch (Exception e) {
                 reg = LocateRegistry.createRegistry(1099);

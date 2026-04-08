@@ -72,5 +72,14 @@ public interface IAuthService extends Remote {
      */
     String getNomUtilisateurParId(String idUtilisateur) throws RemoteException;
 
+    /**
+     * Cree un nouveau compte utilisateur avec les informations fournies.
+     * @param login
+     * @param password
+     * @param nom
+     * @param role
+     * @return
+     * @throws RemoteException
+     */
     boolean creerCompte(String login, String password, String nom, String role) throws RemoteException;
 }

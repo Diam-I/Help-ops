@@ -1,6 +1,5 @@
 package ho.serveur;
 
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,8 +11,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import ho.auth.IAuthService;
@@ -275,16 +272,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         * 
      */
     private String normaliserCategorie(String categorie) {
-        if (categorie == null) {
-            return "incident";
-        }
-
-        String valeur = categorie.trim().toLowerCase();
-        if ("incident".equals(valeur) || "demande".equals(valeur)) {
-            return valeur;
-        }
-
-        return "incident";
+        return TicketValidation.normaliserCategorie(categorie);
     }
 
     /**
@@ -295,16 +283,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         *
      */
     private String normaliserPriorite(String priorite) {
-        if (priorite == null) {
-            return "";
-        }
-
-        String valeur = priorite.trim().toUpperCase();
-        if ("BASSE".equals(valeur) || "MOYENNE".equals(valeur) || "HAUTE".equals(valeur)) {
-            return valeur;
-        }
-
-        return "";
+        return TicketValidation.normaliserPriorite(priorite);
     }
 
     /**
@@ -331,33 +310,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                 }
 
                 if (idConnecte.equals(idCreateur)) {
-                    String titre = lireChamp(objet, "titre");
-                    String categorie = lireChamp(objet, "categorie");
-                    String description = lireChamp(objet, "description");
-                    String etat = lireChamp(objet, "etat");
-                    String dateCreation = lireChamp(objet, "dateCreation");
-                    String dateAssignation = lireChamp(objet, "dateAssignation");
-                    String dateResolution = lireChamp(objet, "dateResolution");
-                    String messageResolution = lireChamp(objet, "messageResolution");
-                    String priorite = lireChamp(objet, "priorite");
-                    String idAgent = lireChamp(objet, "idAgent");
-                    Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, idAgent, priorite);
-                    if (!etat.isEmpty()) {
-                        ticket.setEtat(etat);
-                    }
-                    if (!dateCreation.isEmpty()) {
-                        ticket.setDateCreation(dateCreation);
-                    }
-                    if (!dateAssignation.isEmpty()) {
-                        ticket.setDateAssignation(dateAssignation);
-                    }
-                    if (!dateResolution.isEmpty()) {
-                        ticket.setDateResolution(dateResolution);
-                    }
-                    if (!messageResolution.isEmpty()) {
-                        ticket.setMessageResolution(messageResolution);
-                    }
-                    tickets.add(ticket);
+                    tickets.add(construireTicketDepuisObjetJson(objet));
                 }
 
             }
@@ -393,33 +346,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                 }
 
                 if (idAgentConnecte.equals(idAgent)) {
-                    String titre = lireChamp(objet, "titre");
-                    String categorie = lireChamp(objet, "categorie");
-                    String description = lireChamp(objet, "description");
-                    String etat = lireChamp(objet, "etat");
-                    String dateCreation = lireChamp(objet, "dateCreation");
-                    String dateAssignation = lireChamp(objet, "dateAssignation");
-                    String dateResolution = lireChamp(objet, "dateResolution");
-                    String messageResolution = lireChamp(objet, "messageResolution");
-                    String priorite = lireChamp(objet, "priorite");
-
-                    Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, idAgent, priorite);
-                    if (!etat.isEmpty()) {
-                        ticket.setEtat(etat);
-                    }
-                    if (!dateCreation.isEmpty()) {
-                        ticket.setDateCreation(dateCreation);
-                    }
-                    if (!dateAssignation.isEmpty()) {
-                        ticket.setDateAssignation(dateAssignation);
-                    }
-                    if (!dateResolution.isEmpty()) {
-                        ticket.setDateResolution(dateResolution);
-                    }
-                    if (!messageResolution.isEmpty()) {
-                        ticket.setMessageResolution(messageResolution);
-                    }
-                    tickets.add(ticket);
+                    tickets.add(construireTicketDepuisObjetJson(objet));
                 }
             }
 
@@ -453,33 +380,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
                     continue;
                 }
 
-                String titre = lireChamp(objet, "titre");
-                String categorie = lireChamp(objet, "categorie");
-                String description = lireChamp(objet, "description");
-                String etat = lireChamp(objet, "etat");
-                String dateCreation = lireChamp(objet, "dateCreation");
-                String dateAssignation = lireChamp(objet, "dateAssignation");
-                String dateResolution = lireChamp(objet, "dateResolution");
-                String messageResolution = lireChamp(objet, "messageResolution");
-                String priorite = lireChamp(objet, "priorite");
-
-                Ticket ticket = new Ticket(id, titre, categorie, description, idCreateur, etat, idAgent, priorite);
-                if (!etat.isEmpty()) {
-                    ticket.setEtat(etat);
-                }
-                if (!dateCreation.isEmpty()) {
-                    ticket.setDateCreation(dateCreation);
-                }
-                if (!dateAssignation.isEmpty()) {
-                    ticket.setDateAssignation(dateAssignation);
-                }
-                if (!dateResolution.isEmpty()) {
-                    ticket.setDateResolution(dateResolution);
-                }
-                if (!messageResolution.isEmpty()) {
-                    ticket.setMessageResolution(messageResolution);
-                }
-                tickets.add(ticket);
+                tickets.add(construireTicketDepuisObjetJson(objet));
             }
 
             return tickets;
@@ -554,18 +455,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         * 
      */
     private String lireContenuTicketsJson() throws Exception {
-        Path chemin = trouverCheminTicketsJson();
-        if (Files.exists(chemin)) {
-            return Files.readString(chemin, StandardCharsets.UTF_8);
-        }
-
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream("ho/bd/tickets.json")) {
-            if (is != null) {
-                return new String(is.readAllBytes(), StandardCharsets.UTF_8);
-            }
-        }
-
-        return "[]";
+        return JsonTicket.lireContenuTicketsJson(getClass());
     }
 
     /**
@@ -623,17 +513,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         * 
      */
     private Path trouverCheminTicketsJson() {
-        Path chemin1 = Path.of("ho-commun", "src", "main", "ressources", "ho", "bd", "tickets.json");
-        Path chemin2 = Path.of("..", "ho-commun", "src", "main", "ressources", "ho", "bd", "tickets.json");
-
-        if (Files.exists(chemin1) || Files.exists(chemin1.getParent())) {
-            return chemin1;
-        }
-        if (Files.exists(chemin2) || Files.exists(chemin2.getParent())) {
-            return chemin2;
-        }
-
-        return chemin1;
+        return JsonTicket.trouverCheminTicketsJson();
     }
 
     /**
@@ -644,31 +524,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         * 
      */
     private List<String> extraireObjetsJson(String json) {
-        List<String> objets = new ArrayList<>();
-        if (json == null || json.isBlank()) {
-            return objets;
-        }
-
-        int niveau = 0;
-        int debut = -1;
-
-        for (int i = 0; i < json.length(); i++) {
-            char caractere = json.charAt(i);
-            if (caractere == '{') {
-                if (niveau == 0) {
-                    debut = i;
-                }
-                niveau++;
-            } else if (caractere == '}') {
-                niveau--;
-                if (niveau == 0 && debut >= 0) {
-                    objets.add(json.substring(debut, i + 1));
-                    debut = -1;
-                }
-            }
-        }
-
-        return objets;
+        return TicketJson.extraireObjetsJson(json);
     }
 
     /**
@@ -692,6 +548,13 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
     }
 
     /**
+     * Construit un objet Ticket à partir d'un objet JSON ticket.
+     */
+    private Ticket construireTicketDepuisObjetJson(String objet) {
+        return TicketJson.construireTicketDepuisObjetJson(objet);
+    }
+
+    /**
         * Lit une valeur de champ dans un objet JSON (lecture simple par regex).
         * 
         * @param objetJson chaîne JSON représentant un ticket
@@ -700,12 +563,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         * 
      */
     private String lireChamp(String objetJson, String champ) {
-        Pattern pattern = Pattern.compile("\\\"" + Pattern.quote(champ) + "\\\"\\s*:\\s*\\\"([^\\\"]*)\\\"");
-        Matcher matcher = pattern.matcher(objetJson);
-        if (matcher.find()) {
-            return matcher.group(1);
-        }
-        return "";
+        return TicketJson.lireChamp(objetJson, champ);
     }
 
     /**
@@ -716,38 +574,7 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         *  
      */
     private String ticketVersJson(Ticket ticket) {
-        return "{" +
-                "\"id\": \"" + echapper(ticket.getId()) + "\", " +
-                "\"titre\": \"" + echapper(ticket.getTitre()) + "\", " +
-                "\"categorie\": \"" + echapper(ticket.getCategorie()) + "\", " +
-                "\"description\": \"" + echapper(ticket.getDescription()) + "\", " +
-                "\"etat\": \"" + echapper(ticket.getEtat()) + "\", " +
-                "\"priorite\": \"" + echapper(ticket.getPriorite()) + "\", " +
-                "\"dateCreation\": \"" + echapper(ticket.getDateCreation()) + "\", " +
-                "\"dateAssignation\": \"" + echapper(ticket.getDateAssignation()) + "\", " +
-            "\"dateResolution\": \"" + echapper(ticket.getDateResolution()) + "\", " +
-            "\"messageResolution\": \"" + echapper(ticket.getMessageResolution()) + "\", " +
-                "\"idCreateur\": \"" + echapper(ticket.getIdCreateur()) + "\", " +
-                "\"idAgent\": \"" + echapper(ticket.getIdAgent()) + "\"" +
-                "}";
-    }
-
-    /**
-        * Échappe les caractères sensibles avant écriture JSON.
-        * 
-        * @param valeur chaîne à échapper
-        * @return chaîne échappée pour être insérée dans un JSON, ou chaîne vide si la valeur est null
-        *  
-     */
-    private String echapper(String valeur) {
-        if (valeur == null) {
-            return "";
-        }
-        return valeur
-                .replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\r", "")
-                .replace("\n", "\\n");
+        return TicketJson.ticketVersJson(ticket);
     }
 
     /**
@@ -984,145 +811,9 @@ public class TicketsImpl extends UnicastRemoteObject implements ITicketsService 
         try {
             String contenu = lireContenuTicketsJson();
             List<String> objets = extraireObjetsJson(contenu);
-            
-            long totalTickets = objets.size();
-            long ticketsResolus = 0;
-            long ticketsOuverts = 0;
-            long ticketsAssignes = 0;
-            long totalDureeResolution = 0;
-            long nbIncidents = 0;
-            long nbDemandes = 0;    
-
-            java.util.Map<String, Integer> ticketsParAgent = new java.util.HashMap<>();
-            java.util.Set<String> joursUniques = new java.util.HashSet<>();
-            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-            for (String objet : objets) {
-                String etat = lireChamp(objet, "etat");
-                String idAgent = lireChamp(objet, "idAgent");
-                String dateCreation = lireChamp(objet, "dateCreation");
-                String dateResolution = lireChamp(objet, "dateResolution");
-                String categorie = lireChamp(objet, "categorie");
-                if ("OPEN".equalsIgnoreCase(etat)) ticketsOuverts++;
-                else if ("ASSIGNED".equalsIgnoreCase(etat)) ticketsAssignes++;
-                else if ("RESOLVED".equalsIgnoreCase(etat)) {
-                    ticketsResolus++;
-                    if (!dateCreation.isBlank() && !dateResolution.isBlank()) {
-                        java.time.LocalDateTime debut = java.time.LocalDateTime.parse(dateCreation, formatter);
-                        java.time.LocalDateTime fin = java.time.LocalDateTime.parse(dateResolution, formatter);
-                        totalDureeResolution += java.time.temporal.ChronoUnit.HOURS.between(debut, fin); 
-                
-                    }
-                }
-                if (idAgent != null && !idAgent.isBlank()) {
-                    ticketsParAgent.put(idAgent, ticketsParAgent.getOrDefault(idAgent, 0) + 1);
-                }
-
-                if (!dateCreation.isBlank()) {
-                    joursUniques.add(dateCreation.split(" ")[0]);
-                }
-                if (categorie.contains("incident")) {
-                    nbIncidents++;
-                }
-                else if (categorie.contains("demande")) {
-                    nbDemandes++;
-                }
-            }
-
-            int nbJours ; 
-            double tempsMoyenGlobal ;
-            if (ticketsResolus == 0) {
-                tempsMoyenGlobal = 0;
-            }
-            else {
-                tempsMoyenGlobal = (double) totalDureeResolution / ticketsResolus;
-            }
-            if (joursUniques.isEmpty()) {
-                nbJours = 1;
-            }
-            else {
-                nbJours = joursUniques.size();
-            }
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("=== STATISTIQUES ===\n");
-            sb.append("Total tickets : ").append(totalTickets).append("\n");
-            sb.append("Par état : OPEN(").append(ticketsOuverts).append("), ASSIGNED(")
-            .append(ticketsAssignes).append("), RESOLVED(").append(ticketsResolus).append(")\n\n");
-            sb.append("Temps moyen de résolution : ").append(String.format("%.2f", tempsMoyenGlobal)).append(" heures\n\n");
-            sb.append("--- DÉTAIL PAR AGENT ---\n");
-            if (ticketsParAgent.isEmpty()) {
-                sb.append("Aucun agent n'a encore pris de ticket.\n");
-            } else {
-                IAuthService authService = null;
-                try {
-                    authService = connecterAuthService();
-                } catch (Exception e) {
-                    authService = null;
-                }
-
-                for (String agentId : ticketsParAgent.keySet()) {
-                    int nbTickets = ticketsParAgent.get(agentId);
-                    double pressionAgent = (double) nbTickets / nbJours;
-                    String libelleAgent = agentId;
-                    if (authService != null) {
-                        try {
-                            String nomAgent = authService.getNomUtilisateurParId(agentId);
-                            if (nomAgent != null && !nomAgent.isBlank() && !"inconnu".equalsIgnoreCase(nomAgent)) {
-                                libelleAgent = nomAgent;
-                            }
-                        } catch (Exception e) {
-                            libelleAgent = agentId;
-                        }
-                    }
-
-                    sb.append("Agent: ").append(libelleAgent)
-                    .append(" | Tickets: ").append(nbTickets)
-                    .append(" | Moyenne: ").append(String.format("%.2f", pressionAgent)).append(" tickets/jour\n");
-                }
-            }
-
-            int nbAgents = ticketsParAgent.size();
-            double pressionGlobale ; 
-            if (nbAgents == 0) {
-                pressionGlobale = 0;
-            }
-            else {
-                pressionGlobale = (double) totalTickets / (nbAgents*nbJours);
-            }
-            sb.append("\nPression globale : ").append(String.format("%.2f", pressionGlobale)).append(" tickets/agent/jour\n");  
-
-            String idTopAgent = "inconnu";
-            int maxTickets = 0;
-            for (String agentId : ticketsParAgent.keySet()) {
-                int nbTickets = ticketsParAgent.get(agentId);
-                if (nbTickets > maxTickets) {
-                    maxTickets = nbTickets;
-                    idTopAgent = agentId;
-                }
-            }
-            String nomAgentTop = "aucun" ; 
-            if (!idTopAgent.equals("inconnu")) {
-                try {
-                    IAuthService authService = connecterAuthService();
-                    nomAgentTop = authService.getNomUtilisateurParId(idTopAgent);
-                    
-                } catch (Exception e) {
-                    nomAgentTop = idTopAgent;
-                }
-            }
-            sb.append("L'agent qui prend le plus de tickets : ").append(nomAgentTop).append(" (").append(maxTickets).append(" tickets)\n");
-
-            if (totalTickets > 0) {
-                double pourcentageIncidents = (double) nbIncidents / totalTickets * 100;
-                double pourcentageDemandes = (double) nbDemandes / totalTickets * 100;
-                sb.append("\nRépartition par catégorie :\n");
-                sb.append("Incidents : ").append(String.format("%.2f", pourcentageIncidents)).append("% (").append(nbIncidents).append(" tickets)\n");
-                sb.append("Demandes : ").append(String.format("%.2f", pourcentageDemandes)).append("% (").append(nbDemandes).append(" tickets)\n");
-            }
+            String resultat = TicketStatistiques.generer(objets, this::connecterAuthService);
             log("Statistiques générées.");
-
-            
-            return sb.toString();
+            return resultat;
 
         } catch (Exception e) {
             throw new RemoteException("Erreur lors du calcul des statistiques", e);

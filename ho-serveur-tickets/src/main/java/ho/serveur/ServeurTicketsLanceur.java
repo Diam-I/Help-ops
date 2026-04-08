@@ -8,7 +8,7 @@ import ho.tickets.ITicketsService;
 /**
  * Point d'entrée du serveur de tickets.
  *
- * <p>Publie le service `TicketsService` dans le registre RMI.</p>
+ * Publie le service `TicketsService` dans le registre RMI.
  */
 public class ServeurTicketsLanceur {
     /**
@@ -29,7 +29,7 @@ public class ServeurTicketsLanceur {
 
             System.out.println(">>> Serveur de Tickets démarré.");
         } catch (Exception e) {
-            System.err.println("Erreur lors démarrage du serveur de tickets (registre RMI indisponible ?) :");
+            System.err.println("Erreur lors demarrage du serveur de tickets (registre RMI indisponible ?) :");
             e.printStackTrace();
         }
     }

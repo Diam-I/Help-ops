@@ -63,5 +63,19 @@
     "password": "rtyuio",
     "nom": "azertyu",
     "role": "agent"
+  },
+  {
+    "idUtilisateur": "U008",
+    "login": "aalain",
+    "password": "Alain123",
+    "nom": "Alain Alain",
+    "role": "utilisateur"
+  },
+  {
+    "idUtilisateur": "U009",
+    "login": "kiko",
+    "password": "Iko123",
+    "nom": "Kiko Iko",
+    "role": "agent"
   }
 ]

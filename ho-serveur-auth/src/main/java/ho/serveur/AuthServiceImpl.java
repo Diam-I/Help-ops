@@ -16,9 +16,9 @@ import java.util.UUID;
 import ho.auth.IAuthService;
 
 /**
- * Implémentation serveur du contrat {@link IAuthService}.
+ * Implementation serveur du contrat {@link IAuthService}.
  *
- * <p>Gère l'authentification et la validation centralisée des tokens.</p>
+ * <p>Gere l'authentification et la validation centralisee des tokens.</p>
  */
 public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService {
 
@@ -29,7 +29,7 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
     private static final DateTimeFormatter LOG_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     /**
-        * Crée et exporte le service d'authentification RMI.
+        * Cree et exporte le service d'authentification RMI.
      *
      * @throws RemoteException en cas d'échec de l'export RMI
      */
@@ -38,7 +38,7 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
     }
 
     /**
-        * Vérifie les identifiants et retourne un jeton de session si valides.
+        * Verifie les identifiants et retourne un jeton de session si valides.
      *
      * @param login identifiant fourni par le client
      * @param password mot de passe fourni par le client
@@ -104,7 +104,7 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
     }
 
     /**
-     * Récupère l'identifiant de l'utilisateur associé à un token de session.
+     * Recupere l'identifiant de l'utilisateur associe a un token de session.
      *
      * @param token jeton d'authentification
      * @return l'identifiant de l'utilisateur, ou "inconnu" si le token est invalide ou absent
@@ -229,6 +229,11 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
         return tokenParLogin.get(token);
     }
 
+    /**
+     * Recupere le nom de l'utilisateur associe a un token de session.
+     * @param token jeton d'authentification
+     * @return le nom de l'utilisateur, ou "inconnu" 
+     */
     @Override
     public String getNomByToken(String token) throws RemoteException {
         if (token == null || token.isBlank()) {
@@ -243,6 +248,12 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
         return getNomUtilisateurParId(idUtilisateur);
     }
 
+    /**
+     * Recupere le nom de l'utilisateur associe a un identifiant.
+     * @param idUtilisateur identifiant de l'utilisateur
+     * @return le nom de l'utilisateur, ou "inconnu" si non trouve
+     * @throws RemoteException en cas d'erreur RMI
+     */
     @Override
     public String getNomUtilisateurParId(String idUtilisateur) throws RemoteException {
         if (idUtilisateur == null || idUtilisateur.isBlank()) {
@@ -292,7 +303,7 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
 
 
     /**
-        * Écrit un log horodaté pour suivre les actions.
+        * Ecrit un log horodaté pour suivre les actions.
         *
         * @param message message à afficher
      */
@@ -302,7 +313,7 @@ public class AuthServiceImpl extends UnicastRemoteObject implements IAuthService
     }
 
     /**
-     * Récupère le rôle de l'utilisateur associé à un token de session.
+     * Recupere le role de l'utilisateur associé à un token de session.
      * 
      * @param token jeton d'authentification
      * @return le rôle de l'utilisateur ("agent", "utilisateur", ou "inconnu")
